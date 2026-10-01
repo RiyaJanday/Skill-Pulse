@@ -83,8 +83,14 @@
 
     function detectMode() {
       var r = el.getBoundingClientRect();
-      mode = (r.height > r.width && r.width < window.innerWidth * 0.6) ? 'side' : 'top';
+      if (ui === 'top') {
+        mode = 'top';
+      } else {
+        // Sidebar pages: it is a left column on desktop and a top row only at the CSS mobile breakpoint.
+        mode = window.matchMedia('(max-width: 620px)').matches ? 'top' : 'side';
+      }
       size = (mode === 'side') ? r.width : r.height;
+      if (size < 20) size = (mode === 'side') ? 224 : 60;   // safety net if measured before layout
     }
 
     function placeButton() {
@@ -176,7 +182,22 @@
     detectMode();
     placeButton();
 
+    // Pages may build or resize their sidebar after load (fonts, icons, profile data), so keep the tab in sync.
+    function resync() {
+      if (collapsed) return;
+      if (!el.isConnected) {
+        var again = findTarget();
+        if (!again) return;
+        el = again.el; parent = el.parentElement;
+      }
+      detectMode();
+      placeButton();
+    }
+    window.addEventListener('load', resync);
+    if (window.ResizeObserver) new ResizeObserver(resync).observe(el);
+
     btn.addEventListener('click', function () {
+      if (!el.isConnected) resync();
       if (collapsed) expand(true); else collapse(true);
     });
 
