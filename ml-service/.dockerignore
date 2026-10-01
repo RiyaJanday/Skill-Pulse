@@ -1,0 +1,9 @@
+.venv
+.env
+models
+__pycache__
+**/__pycache__
+.pytest_cache
+tests
+attempts.csv
+*.log

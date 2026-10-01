@@ -1,0 +1,62 @@
+# Runs the whole SkillPulse stack locally: PostgreSQL + Python ML service + Java backend.
+#
+#   docker compose up --build        start everything (first build takes a few minutes)
+#   docker compose down              stop (database data is kept in a volume)
+#   docker compose down -v           stop AND delete the database data
+#
+# Then open http://localhost:8080
+#
+# Settings: copy .env.example to .env (same folder) and edit. LLM keys go in ml-service/.env.
+# This file does not publish the database port, so it cannot clash with a PostgreSQL already running on your PC.
+# Do not run `mvn spring-boot:run` at the same time: both use port 8080.
+
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: skillpulse_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    volumes:
+      - skillpulse_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d skillpulse_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  ml:
+    build: ./ml-service
+    # GROQ_API_KEY, GEMINI_API_KEY, ML_SERVICE_KEY etc. come from ml-service/.env
+    env_file:
+      - path: ./ml-service/.env
+        required: false
+    environment:
+      PORT: "8001"
+    ports:
+      - "8001:8001"   # optional: lets you open http://localhost:8001/health and /docs
+
+  backend:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+      ml:
+        condition: service_started
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/skillpulse_db
+      DB_USERNAME: postgres
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      ML_SERVICE_URL: http://ml:8001
+      ML_SERVICE_KEY: ${ML_SERVICE_KEY:-}
+      SESSION_COOKIE_SECURE: "false"   # local plain HTTP only
+      SPRING_JPA_SHOW_SQL: "false"     # keeps `docker compose logs` readable
+      SKILLPULSE_BASE_URL: http://localhost:8080
+      SKILLPULSE_ADMIN_EMAIL: riri@gmail.com   # this account becomes ADMIN when the backend starts
+      MAIL_USERNAME: ${MAIL_USERNAME:-skillpulse21@gmail.com}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+    ports:
+      - "8080:8080"
+
+volumes:
+  skillpulse_pgdata:
