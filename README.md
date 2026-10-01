@@ -2,6 +2,10 @@
 
 **An AI-assisted skill-tracking and MCQ practice platform.**
 
+**Live demo: https://skill-pulse-m2j6.onrender.com/**
+
+> The live site runs on Render's free tier, so it sleeps after 15 minutes without traffic. The first request after a pause can take about a minute to load.
+
 Learners practise multiple-choice questions organised as **Subject → Topic → Question**. SkillPulse tracks how well they know each topic, predicts what they are about to forget, schedules reviews, builds a personalised 7-day study plan, and reshapes a weekly timetable when real life gets in the way. A study chatbot, an AI tutor and a job skill-gap analyser sit on top.
 
 The project is built as a college group project. The backend is **100% Java (Spring Boot)** and all AI/ML is **100% Python (FastAPI)**, so the two halves can be developed, tested and explained separately.
@@ -24,7 +28,7 @@ The project is built as a college group project. The backend is **100% Java (Spr
 12. [Running the project locally](#12-running-the-project-locally)
 13. [Docker](#13-docker)
 14. [CI pipeline](#14-ci-pipeline)
-15. [Deployment (Railway)](#15-deployment-railway)
+15. [Deployment (Render + Neon)](#15-deployment-render--neon)
 16. [Testing](#16-testing)
 17. [Known limitations](#17-known-limitations)
 18. [Screenshots](#18-screenshots)
@@ -399,7 +403,34 @@ A newer push cancels an older run of the same branch. Status is on the **Actions
 
 ---
 
-## 15. Deployment (Railway)
+## 15. Deployment (Render + Neon)
+
+Live site: **https://skill-pulse-m2j6.onrender.com/**
+
+The deployed setup has three parts: a **Neon** PostgreSQL database, an **ml-service** web service on Render and a **backend** web service on Render. Both Render services use the Docker runtime and the free instance type. Render's free web services cannot receive private network traffic, so the ML service has a public URL and is protected by `ML_SERVICE_KEY`.
+
+1. Push the repo to GitHub.
+2. **Neon:** create a project and copy the host, database, user and password from the connection details. Turn **Connection pooling** off so Flyway uses a direct connection.
+3. **ml-service:** Render → New → Web Service → this repo. Runtime: Docker. Root Directory: `ml-service`. Variables:
+   - `GROQ_API_KEY=...` (and `GEMINI_API_KEY` if used)
+   - `ML_SERVICE_KEY=<long random secret>`
+   - Health check path: `/health`
+4. **backend:** Render → New → Web Service → this repo. Runtime: Docker. Root Directory: blank (the root `Dockerfile`). Variables:
+   - `DB_URL=jdbc:postgresql://<neon-host>/<database>?sslmode=require`
+   - `DB_USERNAME=<neon user>`
+   - `DB_PASSWORD=<neon password>`
+   - `ML_SERVICE_URL=https://<ml-service-name>.onrender.com`
+   - `ML_SERVICE_KEY=` the same secret as the ML service
+   - `SESSION_COOKIE_SECURE=true`
+   - `SKILLPULSE_BASE_URL=https://skill-pulse-m2j6.onrender.com`
+   - `SKILLPULSE_ADMIN_EMAIL`, `MAIL_USERNAME`, `MAIL_PASSWORD`
+   - `JAVA_TOOL_OPTIONS=-Xmx300m` (the free instance has 512 MB of RAM)
+5. Deploy the ML service first, then the backend. The first backend start runs Flyway V1 to V5 and lets Hibernate create the rest on the empty database.
+6. Check that the live URL loads, you can register and log in, and generating a plan shows a Groq model name rather than `rule-based-fallback`.
+
+Notes: both free services sleep after 15 minutes of no traffic, and Neon's free database also pauses when idle. Open `https://<ml-service-name>.onrender.com/health` a few minutes before a demo to wake the ML service. Never put the database password or API keys in the repo.
+
+### Alternative: Railway (not used for the live site)
 
 One Railway project with three services: **Postgres**, **ml-service** (from `ml-service/Dockerfile`) and **backend** (from the root `Dockerfile`). Only the backend gets a public domain.
 
@@ -445,7 +476,7 @@ If a service name differs from `ml-service` or `Postgres`, use that name inside 
 - SM-2 due reviews are not part of timetable priority yet.
 - Per-topic BKT `pInit` is stored but new topics still start at 0.20.
 - `application.properties` still has local defaults (database password, admin and mail address); use environment variables for any shared or deployed setup.
-- No Java tests yet. The Docker Compose and Railway setups are written but have not been run end to end.
+- No Java tests yet. The Docker Compose and Railway setups are written but have not been run end to end. The live site uses Render + Neon (section 15).
 
 ---
 
