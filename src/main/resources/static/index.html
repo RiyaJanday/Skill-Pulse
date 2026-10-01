@@ -80,26 +80,6 @@ nav {
 }
 nav.scrolled { background:rgba(253,248,242,.96); box-shadow:0 4px 30px rgba(161,130,118,.12); }
 
-/* Collapsible header */
-nav { transition:background .4s, box-shadow .4s, transform .45s cubic-bezier(.22,1,.36,1); }
-nav.collapsed { transform:translateY(-100%); box-shadow:none; }
-#nav-toggle {
-  position:fixed; left:50%; top:var(--nav-h, 70px);
-  transform:translateX(-50%);
-  z-index:201;
-  width:54px; height:22px;
-  display:flex; align-items:center; justify-content:center;
-  background:rgba(253,248,242,.96);
-  border:1px solid var(--border); border-top:none;
-  border-radius:0 0 14px 14px;
-  color:var(--taupe); cursor:none;
-  box-shadow:0 6px 16px rgba(161,130,118,.14);
-  transition:top .45s cubic-bezier(.22,1,.36,1), background .25s, color .25s;
-}
-#nav-toggle:hover { background:var(--taupe); color:#fff; }
-#nav-toggle svg { width:14px; height:14px; transition:transform .35s; }
-#nav-toggle.collapsed { top:0; }
-#nav-toggle.collapsed svg { transform:rotate(180deg); }
 
 .nav-brand { display:flex; align-items:center; gap:.75rem; text-decoration:none; }
 .nav-logo {
@@ -1372,39 +1352,6 @@ window.addEventListener('scroll', () => {
 });
 
 // ═══════════════════════════════════════════════
-// COLLAPSIBLE HEADER
-// ═══════════════════════════════════════════════
-(function () {
-  const nav = document.getElementById('nav');
-  const btn = document.createElement('button');
-  btn.id = 'nav-toggle';
-  btn.type = 'button';
-  btn.setAttribute('aria-controls', 'nav');
-  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 15 12 9 18 15"/></svg>';
-  document.body.appendChild(btn);
-
-  function syncHeight() {
-    document.documentElement.style.setProperty('--nav-h', nav.offsetHeight + 'px');
-  }
-
-  function setCollapsed(collapsed) {
-    nav.classList.toggle('collapsed', collapsed);
-    btn.classList.toggle('collapsed', collapsed);
-    btn.setAttribute('aria-expanded', String(!collapsed));
-    btn.setAttribute('aria-label', collapsed ? 'Show header' : 'Hide header');
-    try { localStorage.setItem('sp-nav-collapsed', collapsed ? '1' : '0'); } catch (e) {}
-  }
-
-  syncHeight();
-  window.addEventListener('resize', syncHeight);
-  btn.addEventListener('click', () => setCollapsed(!nav.classList.contains('collapsed')));
-
-  let saved = null;
-  try { saved = localStorage.getItem('sp-nav-collapsed'); } catch (e) {}
-  setCollapsed(saved === '1');
-})();
-
-// ═══════════════════════════════════════════════
 // PARALLAX HERO ELEMENTS ON SCROLL
 // ═══════════════════════════════════════════════
 window.addEventListener('scroll', () => {
@@ -1427,5 +1374,6 @@ document.addEventListener('mousemove', e => {
   });
 });
 </script>
+<script src="assets/js/collapsible-header.js"></script>
 </body>
 </html>
