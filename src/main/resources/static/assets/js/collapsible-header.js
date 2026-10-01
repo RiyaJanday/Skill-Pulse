@@ -12,21 +12,28 @@
   window.__spCollapsibleHeader = true;
 
   var STORAGE_KEY = 'sp-header-collapsed';
-  var SELECTORS = [
-    '#nav', 'aside.sidebar', 'nav.sidebar', '.sidebar', 'aside',
-    '.dash-nav', '.topbar', '.top-bar', '.navbar', 'body > header'
-  ];
+  var SIDE_SELECTORS = ['aside.sidebar', 'nav.sidebar', '.sidebar', 'aside'];
+  var TOP_SELECTORS = ['nav#nav'];          // landing page (index.html) only
   var EASE = 'cubic-bezier(.22,1,.36,1)';
   var EL_TRANSITION = 'transform .4s ' + EASE + ', margin .4s ' + EASE + ', opacity .3s, padding .4s ' + EASE;
   var PARENT_TRANSITION = 'grid-template-columns .4s ' + EASE;
 
+  function visible(node) {
+    var r = node.getBoundingClientRect();
+    return r.width > 0 && r.height > 0;
+  }
+
+  // App pages: the sidebar wins and the toggle lives on its left side.
+  // Only the landing page (no sidebar) gets the top-bar version.
   function findTarget() {
-    for (var i = 0; i < SELECTORS.length; i++) {
-      var list = document.querySelectorAll(SELECTORS[i]);
-      for (var j = 0; j < list.length; j++) {
-        var r = list[j].getBoundingClientRect();
-        if (r.width > 0 && r.height > 0) return list[j];
-      }
+    var i, j, list;
+    for (i = 0; i < SIDE_SELECTORS.length; i++) {
+      list = document.querySelectorAll(SIDE_SELECTORS[i]);
+      for (j = 0; j < list.length; j++) if (visible(list[j])) return { el: list[j], ui: 'side' };
+    }
+    for (i = 0; i < TOP_SELECTORS.length; i++) {
+      list = document.querySelectorAll(TOP_SELECTORS[i]);
+      for (j = 0; j < list.length; j++) if (visible(list[j])) return { el: list[j], ui: 'top' };
     }
     return null;
   }
@@ -39,8 +46,10 @@
   }
 
   function init() {
-    var el = findTarget();
-    if (!el) return;                         // login / forgot-password etc.: nothing to collapse
+    var found = findTarget();
+    if (!found) return;                      // login / forgot-password etc.: nothing to collapse
+    var el = found.el;
+    var ui = found.ui;                       // where the toggle tab lives: 'side' (left) or 'top'
     var parent = el.parentElement;
 
     /* ---------- toggle button ---------- */
@@ -79,16 +88,20 @@
     }
 
     function placeButton() {
-      btn.className = 'sp-hdr-toggle sp-' + mode + (collapsed ? ' sp-collapsed' : '');
+      btn.className = 'sp-hdr-toggle sp-' + ui + (collapsed ? ' sp-collapsed' : '');
       btn.setAttribute('aria-expanded', String(!collapsed));
       btn.setAttribute('aria-label', collapsed ? 'Show navigation' : 'Hide navigation');
       btn.title = collapsed ? 'Show navigation' : 'Hide navigation';
-      if (mode === 'top') {
+      if (ui === 'top') {
         btn.style.left = '50%';
         btn.style.top = collapsed ? '0px' : size + 'px';
-      } else {
+      } else if (mode === 'side') {
         btn.style.top = '14px';
         btn.style.left = collapsed ? '0px' : size + 'px';
+      } else {
+        // sidebar rendered as a top row on small screens: tab sits at the left edge under the row
+        btn.style.left = '0px';
+        btn.style.top = collapsed ? '0px' : size + 'px';
       }
     }
 
