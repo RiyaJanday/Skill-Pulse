@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkillPulse - User Management</title>
+  <link rel="icon" href="./SkillPulse logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:wght@600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    :root{--bg:#f6eee8;--surface:#fffdfb;--primary:#9a7463;--primary-soft:#f2e5de;--sidebar:#3c2a22;--ink:#382a24;--muted:#96796b;--line:#eadbd3;--success:#72a873;--success-soft:#eaf3e8;--danger:#d86457;--danger-soft:#fae9e6;--warning:#d5a94f;--shadow:0 14px 35px rgba(70,45,34,.08)}
+    *{box-sizing:border-box;margin:0;padding:0}body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink)}button,input,select{font:inherit}.app{min-height:100vh;display:grid;grid-template-columns:220px 1fr}.sidebar{background:var(--sidebar);color:#fff;padding:22px 16px;display:flex;flex-direction:column;gap:10px}.brand{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:700;padding:4px 10px 18px}.brand img{width:30px;height:30px;object-fit:contain}.admin-label{border:1px solid rgba(255,255,255,.13);background:rgba(255,255,255,.06);border-radius:7px;padding:14px;margin-bottom:6px}.admin-label strong,.admin-label span{display:block}.admin-label span{font-size:10px;color:#d5c4bb;margin-top:3px}.nav{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:7px;color:#e9dbd4;text-decoration:none;font-size:12px;font-weight:600}.nav:hover,.nav.active{background:var(--primary);color:#fff}.nav svg{width:17px}.logout{width:100%;justify-content:flex-start;margin-top:auto;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:#d8c9c1;cursor:pointer;text-align:left}.logout:hover{background:rgba(216,100,87,.16);border-color:rgba(216,100,87,.34);color:#fff}.main{padding:30px;min-width:0}.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}.header h1{font-family:'Fraunces',serif;font-size:30px}.header p{color:var(--muted);font-size:12px;margin-top:5px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow)}.stat{padding:18px}.stat span{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;font-weight:700}.stat strong{display:block;font-family:'Fraunces',serif;font-size:26px;margin-top:7px}.toolbar{padding:14px;margin-bottom:16px;display:grid;grid-template-columns:minmax(220px,1fr) 180px;gap:10px}.control{width:100%;border:1px solid var(--line);border-radius:6px;background:#fff;padding:10px 12px;color:var(--ink);outline:none}.control:focus{border-color:var(--primary)}.table-card{overflow:hidden}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse}th{text-align:left;padding:12px 14px;background:#f7eee8;color:var(--muted);font-size:10px;text-transform:uppercase}td{padding:14px;border-top:1px solid var(--line);font-size:12px;vertical-align:middle}.user{display:flex;align-items:center;gap:10px}.avatar{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--primary-soft);color:var(--primary);font-weight:700}.user strong,.user span{display:block}.user span{color:var(--muted);font-size:10px;margin-top:2px}.pill{display:inline-flex;padding:5px 9px;border-radius:99px;font-size:9px;font-weight:700}.pill.admin{background:var(--success-soft);color:#57825a}.pill.user{background:var(--primary-soft);color:var(--primary)}.you{color:var(--muted);font-size:10px;margin-left:6px}.action{display:flex;align-items:center;gap:8px}.btn{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:6px;padding:9px 12px;font-weight:700;font-size:11px;cursor:pointer}.btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}.btn.danger{color:var(--danger);border-color:#efc1ba}.btn:disabled{opacity:.45;cursor:not-allowed}.empty{text-align:center;color:var(--muted);padding:40px}.toast{position:fixed;right:24px;bottom:24px;background:var(--sidebar);color:#fff;padding:12px 15px;border-radius:7px;font-size:12px;transform:translateY(80px);opacity:0;transition:.2s}.toast.show{transform:none;opacity:1}
+    @media(max-width:800px){.app{grid-template-columns:74px 1fr}.sidebar{padding:16px 9px}.brand span,.admin-label,.nav span{display:none}.brand,.nav{justify-content:center}.main{padding:20px 14px}.stats{grid-template-columns:1fr}.toolbar{grid-template-columns:1fr}.action{min-width:150px}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand"><img src="./SkillPulse logo.png" alt=""><span>SkillPulse</span></div>
+    <div class="admin-label"><strong>User Management</strong><span>Administrator workspace</span></div>
+    <a class="nav" href="admin.html"><i data-lucide="list-checks"></i><span>Questions</span></a>
+    <a class="nav active" href="admin-users.html"><i data-lucide="users"></i><span>Users</span></a>
+    <a class="nav" href="admin-ai.html"><i data-lucide="sparkles"></i><span>AI Insights</span></a>
+    <a class="nav" href="dashboard.html"><i data-lucide="layout-dashboard"></i><span>User Dashboard</span></a>
+    <button class="nav logout" onclick="logoutAdmin()"><i data-lucide="log-out"></i><span>Logout</span></button>
+  </aside>
+  <main class="main">
+    <div class="header"><div><h1>User Management</h1><p>Control administrator access for registered SkillPulse accounts</p></div></div>
+    <div class="stats">
+      <div class="card stat"><span>Registered Users</span><strong id="total-stat">0</strong></div>
+      <div class="card stat"><span>Administrators</span><strong id="admin-stat">0</strong></div>
+      <div class="card stat"><span>Standard Users</span><strong id="user-stat">0</strong></div>
+    </div>
+    <div class="card toolbar">
+      <input class="control" id="search" placeholder="Search by name or email" oninput="render()">
+      <select class="control" id="role-filter" onchange="render()"><option value="">All roles</option><option value="ADMIN">Administrators</option><option value="USER">Standard users</option></select>
+    </div>
+    <div class="card table-card"><div class="table-wrap"><table><thead><tr><th>User</th><th>Joined</th><th>Role</th><th>Access</th></tr></thead><tbody id="user-rows"></tbody></table></div></div>
+  </main>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+  let users=[];
+  function icons(){if(window.lucide)lucide.createIcons({'stroke-width':1.8})}
+  function session(){try{return JSON.parse(sessionStorage.getItem('sp_current_user')||'null')}catch(e){return null}}
+  function token(){const user=session();return user&&user.token}
+  async function api(url,options){const response=await fetch(url,options);const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.message||'Request failed.');return data}
+  async function init(){const user=session();if(!user||!user.token){location.href='login.html';return}try{const me=await api('/api/auth/me?token='+encodeURIComponent(user.token));sessionStorage.setItem('sp_current_user',JSON.stringify(me));if(me.role!=='ADMIN')throw new Error('Administrator access is required.');users=await api('/api/admin/users?token='+encodeURIComponent(me.token));render()}catch(error){document.querySelector('.main').innerHTML='<div class="card empty"><h2>Access unavailable</h2><p style="margin-top:8px">'+escapeHtml(error.message)+'</p><a class="btn" style="display:inline-block;margin-top:16px;text-decoration:none" href="dashboard.html">Back to dashboard</a></div>'}icons()}
+  function render(){const query=document.getElementById('search').value.trim().toLowerCase(),role=document.getElementById('role-filter').value;const filtered=users.filter(user=>(!query||(user.name+' '+user.email).toLowerCase().includes(query))&&(!role||user.role===role));document.getElementById('user-rows').innerHTML=filtered.length?filtered.map(row).join(''):'<tr><td colspan="4" class="empty">No users match these filters.</td></tr>';document.getElementById('total-stat').textContent=users.length;document.getElementById('admin-stat').textContent=users.filter(u=>u.role==='ADMIN').length;document.getElementById('user-stat').textContent=users.filter(u=>u.role==='USER').length;icons()}
+  function row(user){const initials=String(user.name||user.email||'?').split(/\s+/).slice(0,2).map(v=>v.charAt(0)).join('').toUpperCase();const joined=user.createdAt?new Date(user.createdAt).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'}):'--';const next=user.role==='ADMIN'?'USER':'ADMIN';return `<tr><td><div class="user"><div class="avatar">${escapeHtml(initials)}</div><div><strong>${escapeHtml(user.name||'Unnamed user')}${user.currentUser?'<span class="you">You</span>':''}</strong><span>${escapeHtml(user.email)}</span></div></div></td><td>${joined}</td><td><span class="pill ${user.role.toLowerCase()}">${user.role==='ADMIN'?'Administrator':'Standard user'}</span></td><td><div class="action"><button class="btn ${next==='ADMIN'?'primary':'danger'}" ${user.currentUser?'disabled title="You cannot change your own role"':''} onclick="changeRole(${user.id},'${next}')">${next==='ADMIN'?'Make Admin':'Remove Admin'}</button></div></td></tr>`}
+  async function changeRole(id,role){const user=users.find(item=>item.id===id);if(!user)return;const action=role==='ADMIN'?'grant administrator access to':'remove administrator access from';if(!confirm(`Do you want to ${action} ${user.name}?`))return;try{const updated=await api(`/api/admin/users/${id}/role?token=${encodeURIComponent(token())}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({role})});const index=users.findIndex(item=>item.id===id);users[index]=updated;render();toast(role==='ADMIN'?'Administrator access granted.':'Administrator access removed.')}catch(error){toast(error.message)}}
+  function toast(message){const el=document.getElementById('toast');el.textContent=message;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2600)}
+  function escapeHtml(value){return String(value||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+  function logoutAdmin(){sessionStorage.removeItem('sp_current_user');location.href='login.html'}
+  init();icons();
+</script>
+</body>
+</html>

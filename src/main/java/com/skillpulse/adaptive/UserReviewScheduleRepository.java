@@ -1,0 +1,3 @@
+package com.skillpulse.adaptive;
+import org.springframework.data.jpa.repository.JpaRepository; import java.time.Instant; import java.util.*;
+public interface UserReviewScheduleRepository extends JpaRepository<UserReviewSchedule,Long>{Optional<UserReviewSchedule> findByUserIdAndQuestionId(Long userId,Long questionId);List<UserReviewSchedule> findByUserIdAndDueAtLessThanEqualOrderByDueAtAsc(Long userId,Instant dueAt);long countByUserIdAndDueAtLessThanEqual(Long userId,Instant dueAt);List<UserReviewSchedule> findByDueAtLessThanEqual(Instant dueAt);List<UserReviewSchedule> findByUserIdAndQuestionTopicId(Long userId,Long topicId);List<UserReviewSchedule> findByUserIdAndQuestionTopicSubjectNameAndDueAtLessThanEqualOrderByDueAtAsc(Long userId,String subject,Instant dueAt);}

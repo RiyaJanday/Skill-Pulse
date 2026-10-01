@@ -1,0 +1,8 @@
+package com.skillpulse.personalization;
+import com.skillpulse.auth.AppUser; import javax.persistence.*; import java.time.Instant; import java.util.*;
+@Entity @Table(name="personalized_plans") public class PersonalizedPlan {
+ @Id @GeneratedValue(strategy=GenerationType.IDENTITY) private Long id; @ManyToOne(fetch=FetchType.LAZY,optional=false) @JoinColumn(name="user_id") private AppUser user;
+ @Column(nullable=false) private String subjectName; @Column(nullable=false,length=1200) private String summary; @Column(length=500) private String primaryWeakness; private String engine; @Column(nullable=false) private double adherenceRate; @Column(nullable=false) private boolean active=true; @Column(nullable=false) private Instant createdAt=Instant.now();
+ @OneToMany(mappedBy="plan",cascade=CascadeType.ALL,orphanRemoval=true) @OrderBy("dayNumber ASC") private List<PersonalizedPlanDay> days=new ArrayList<PersonalizedPlanDay>();
+ public Long getId(){return id;} public AppUser getUser(){return user;} public void setUser(AppUser v){user=v;} public String getSubjectName(){return subjectName;} public void setSubjectName(String v){subjectName=v;} public String getSummary(){return summary;} public void setSummary(String v){summary=v;} public String getPrimaryWeakness(){return primaryWeakness;} public void setPrimaryWeakness(String v){primaryWeakness=v;} public String getEngine(){return engine;} public void setEngine(String v){engine=v;} public double getAdherenceRate(){return adherenceRate;} public void setAdherenceRate(double v){adherenceRate=v;} public boolean isActive(){return active;} public void setActive(boolean v){active=v;} public Instant getCreatedAt(){return createdAt;} public List<PersonalizedPlanDay> getDays(){return days;}
+}

@@ -1,0 +1,1897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SkillPulse Dashboard</title>
+<link rel="icon" type="image/jpeg" href="./SkillPulse logo.png"> 
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --cream:       #f5ede4;
+    --cream-dark:  #edddd0;
+    --rose:        #b87a6a;
+    --tan:         #8c6b5c;
+    --warm-white:  #faf6f2;
+    --card-bg:     rgba(255,255,255,0.68);
+    --card-border: rgba(180,130,110,0.14);
+    --sidebar-bg:  #f0e4da;
+    --sidebar-act: #8c6b5c;
+    --text-dark:   #3a2a22;
+    --text-mid:    #7a5c52;
+    --text-light:  #b09080;
+    --green:       #7aab7a;
+    --shadow:      0 2px 14px rgba(140,100,80,0.07);
+    --ph-bg:       rgba(180,130,110,0.09);
+    --ph-bd:       rgba(180,130,110,0.14);
+  }
+
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--text-dark);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  body::before {
+    content:'';
+    position:fixed; inset:0;
+    background:
+      radial-gradient(ellipse 500px 350px at 85% 15%, rgba(210,160,130,.13) 0%,transparent 70%),
+      radial-gradient(ellipse 350px 450px at  8% 72%, rgba(180,120,100,.09) 0%,transparent 70%);
+    pointer-events:none; z-index:0;
+  }
+
+  /* APP */
+  .app { display:flex; flex:1; overflow:hidden; position:relative; z-index:1; }
+
+  /* SIDEBAR */
+  .sidebar {
+    width:210px; flex-shrink:0;
+    background:var(--sidebar-bg);
+    border-right:1px solid var(--card-border);
+    display:flex; flex-direction:column;
+    padding:20px 14px; gap:4px;
+  }
+
+  .profile-card {
+    background:linear-gradient(135deg,#e8c97a,#d4aa5a);
+    border-radius:14px; padding:14px;
+    display:flex; align-items:center; gap:10px;
+    margin-bottom:18px;
+    box-shadow:0 3px 14px rgba(180,140,60,.20);
+  }
+
+  .avatar {
+    width:38px; height:38px; flex-shrink:0;
+    background:rgba(255,255,255,.32); border-radius:10px;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Fraunces',serif; font-weight:600; font-size:14px; color:#7a5010;
+    overflow:hidden;
+  }
+
+  .avatar img {
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+  }
+
+  .pname  { font-size:13px; font-weight:600; color:#5a3a00; line-height:1.2; }
+  .plevel { font-size:11px; color:rgba(90,58,0,.60); margin-top:2px; }
+
+  .nav-item {
+    display:flex; align-items:center; gap:10px;
+    padding:9px 12px; border-radius:10px;
+    font-size:13px; font-weight:500; color:var(--text-mid);
+    cursor:pointer; transition:all .18s; user-select:none;
+  }
+
+  .nav-item:hover  { background:rgba(140,107,92,.09); color:var(--tan); }
+  .nav-item.active { background:var(--sidebar-act); color:#fff; box-shadow:0 3px 10px rgba(140,107,92,.26); }
+  .nav-item[onclick*="'history'"] { order:6; }
+  .nav-item[onclick*="'settings'"] { order:7; }
+
+  .nav-icon { font-size:15px; width:18px; text-align:center; }
+
+  .badge {
+    margin-left:auto; background:var(--rose); color:#fff;
+    border-radius:20px; font-size:10px; font-weight:700;
+    padding:1px 7px; min-width:18px; text-align:center;
+  }
+
+  .nav-item.active .badge { background:rgba(255,255,255,.28); }
+
+  /* MAIN */
+  .main {
+    flex:1; overflow-y:auto; overflow-x:hidden;
+    padding:32px 36px;
+    scrollbar-width:thin; scrollbar-color:rgba(180,130,110,.22) transparent;
+  }
+
+  .main::-webkit-scrollbar       { width:5px; }
+  .main::-webkit-scrollbar-track { background:transparent; }
+  .main::-webkit-scrollbar-thumb { background:rgba(180,130,110,.28); border-radius:99px; }
+
+  /* SECTIONS */
+  .section { display:none; }
+  .section.active { display:block; animation:fadeUp .24s ease both; }
+
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(8px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+
+  /* PAGE HEADER */
+  .page-header { margin-bottom:28px; }
+  .page-header h1 { font-family:'Fraunces',serif; font-size:30px; font-weight:500; color:var(--text-dark); }
+  .page-header p  { font-size:13px; color:var(--text-light); margin-top:5px; }
+
+  /* CARD */
+  .card {
+    background:var(--card-bg);
+    border:1px solid var(--card-border);
+    border-radius:18px; padding:22px 24px;
+    backdrop-filter:blur(10px);
+    box-shadow:var(--shadow);
+  }
+
+  .card-title {
+    font-size:12px; font-weight:600; letter-spacing:.06em;
+    text-transform:uppercase; color:var(--text-light);
+    margin-bottom:16px;
+  }
+
+  /* GRIDS */
+  .g3  { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:20px; }
+  .g2  { display:grid; grid-template-columns:1fr 270px;    gap:18px; margin-bottom:20px; }
+  .g2e { display:grid; grid-template-columns:1fr 1fr;      gap:16px; margin-bottom:20px; }
+
+  /* PLACEHOLDER — static, no animation */
+  .ph {
+    background: var(--ph-bg);
+    border-radius: 8px;
+    display: block;
+  }
+
+  .ph.circle { border-radius: 50%; }
+  .ph.pill   { border-radius: 99px; }
+
+  /* EMPTY ITEM ROW */
+  .empty-item {
+    background:rgba(255,255,255,.40);
+    border:1px solid var(--card-border);
+    border-radius:14px; padding:18px 20px;
+    margin-bottom:12px;
+    display:flex; flex-direction:column; gap:10px;
+  }
+
+  .empty-item:last-child { margin-bottom:0; }
+
+  .row { display:flex; align-items:center; gap:10px; }
+
+  /* WEEK NAV */
+  .week-nav {
+    background:var(--card-bg); border:1px solid var(--card-border);
+    border-radius:14px; padding:14px 20px;
+    display:flex; align-items:center; justify-content:space-between;
+    backdrop-filter:blur(8px); box-shadow:var(--shadow);
+    margin-bottom:20px; gap:16px; flex-wrap:wrap;
+  }
+
+  .day-pills { display:flex; gap:7px; }
+
+  .day-pill {
+    width:34px; height:34px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:11px; font-weight:500;
+    background:rgba(180,130,110,.08); color:var(--text-light);
+    cursor:pointer; transition:all .18s; user-select:none;
+  }
+
+  .day-pill.active { background:var(--sidebar-act); color:#fff; box-shadow:0 2px 8px rgba(140,107,92,.22); }
+
+  .week-label .day  { font-family:'Fraunces',serif; font-size:18px; font-weight:500; color:var(--text-dark); }
+  .week-label .meta { font-size:11px; color:var(--text-light); margin-top:2px; }
+
+  /* CHIPS */
+  .chip-row { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
+
+  .chip {
+    padding:6px 16px; border-radius:20px; font-size:12px; font-weight:500;
+    cursor:pointer; border:1.5px solid var(--card-border);
+    background:rgba(255,255,255,.38); color:var(--text-mid);
+    font-family:'DM Sans',sans-serif; transition:all .18s;
+  }
+
+  .chip.active { background:var(--sidebar-act); color:#fff; border-color:transparent; }
+
+  /* ANALYTICS TOP */
+  .analytics-top {
+    display:flex; align-items:flex-start; justify-content:space-between;
+    margin-bottom:28px; gap:16px;
+  }
+
+  .filter-row { display:flex; gap:8px; }
+
+  .filter-btn {
+    padding:7px 14px; border-radius:10px;
+    border:1.5px solid var(--card-border);
+    background:var(--card-bg); color:var(--text-mid);
+    font-size:12px; font-weight:500; cursor:pointer;
+    font-family:'DM Sans',sans-serif; backdrop-filter:blur(8px);
+  }
+
+  /* SETTINGS TABS */
+  .tab-strip {
+    display:flex; border-radius:12px; overflow:hidden;
+    border:1px solid var(--card-border);
+    margin-bottom:22px; width:fit-content;
+    background:rgba(255,255,255,.35);
+  }
+
+  .tab {
+    padding:9px 22px; font-size:13px; font-weight:500;
+    cursor:pointer; color:var(--text-mid);
+    border:none; background:transparent;
+    font-family:'DM Sans',sans-serif; transition:all .18s;
+  }
+
+  .tab.active { background:var(--sidebar-act); color:#fff; }
+
+  /* SETTINGS ROWS */
+  hr.div { border:none; border-top:1px solid var(--card-border); margin:14px 0; }
+
+  .settings-row {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 0; border-bottom:1px solid var(--card-border);
+  }
+
+  .settings-row:last-child { border-bottom:none; }
+
+  .s-label { font-size:13px; font-weight:500; color:var(--text-dark); }
+  .s-sub   { font-size:11px; color:var(--text-light); margin-top:3px; }
+
+  /* TOGGLE */
+  .toggle {
+    width:44px; height:24px; border-radius:12px;
+    background:var(--green); position:relative;
+    cursor:pointer; transition:background .25s; flex-shrink:0;
+  }
+
+  .toggle::after {
+    content:''; position:absolute;
+    width:18px; height:18px; background:#fff;
+    border-radius:50%; top:3px; left:23px;
+    transition:left .25s; box-shadow:0 1px 4px rgba(0,0,0,.14);
+  }
+
+  .toggle.off { background:var(--cream-dark); }
+  .toggle.off::after { left:3px; }
+
+  /* AVATAR LG */
+  .avatar-lg {
+    width:44px; height:44px; border-radius:12px; flex-shrink:0;
+    background:linear-gradient(135deg,#e8c97a,#d4aa5a);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Fraunces',serif; font-weight:600; color:#7a5010; font-size:15px;
+  }
+
+  /* BUTTONS */
+  .btn {
+    padding:8px 18px; border-radius:10px; font-size:12px; font-weight:500;
+    cursor:pointer; font-family:'DM Sans',sans-serif; transition:all .18s;
+    border:1.5px solid var(--card-border); background:var(--warm-white); color:var(--text-dark);
+    white-space:nowrap;
+  }
+
+  .btn:hover { background:var(--sidebar-act); color:#fff; border-color:transparent; }
+  .btn-danger { border-color:#d4685a; color:#d4685a; background:transparent; }
+  .btn-danger:hover { background:#d4685a; color:#fff; }
+
+  .metric-value {
+    font-family:'Fraunces',serif;
+    font-size:38px;
+    line-height:1;
+    color:var(--text-dark);
+    margin-bottom:8px;
+  }
+
+  .metric-sub {
+    font-size:12px;
+    color:var(--text-light);
+  }
+
+  .skill-bar {
+    height:8px;
+    width:100%;
+    background:rgba(180,130,110,.12);
+    border-radius:99px;
+    overflow:hidden;
+  }
+
+  .skill-fill {
+    height:100%;
+    border-radius:99px;
+    background:var(--green);
+  }
+
+  .skill-fill.decaying { background:#d4685a; }
+  .skill-fill.stable { background:#d4aa5a; }
+
+  .skill-card-title {
+    font-size:15px;
+    font-weight:600;
+    color:var(--text-dark);
+  }
+
+  .status-pill {
+    border-radius:99px;
+    padding:4px 10px;
+    font-size:10px;
+    font-weight:700;
+    letter-spacing:.05em;
+    background:rgba(122,171,122,.16);
+    color:#4f8a4f;
+  }
+
+  .status-pill.decaying {
+    background:rgba(212,104,90,.12);
+    color:#d4685a;
+  }
+
+  .status-pill.stable {
+    background:rgba(212,170,90,.16);
+    color:#9a6c20;
+  }
+
+  .donut {
+    --score: 0;
+    width:118px;
+    height:118px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:conic-gradient(var(--green) calc(var(--score) * 1%), rgba(180,130,110,.12) 0);
+    position:relative;
+  }
+
+  .donut::after {
+    content:'';
+    position:absolute;
+    inset:14px;
+    border-radius:50%;
+    background:var(--warm-white);
+  }
+
+  .donut-value {
+    position:relative;
+    z-index:1;
+    font-family:'Fraunces',serif;
+    font-size:28px;
+    color:var(--text-dark);
+  }
+
+  .data-note {
+    font-size:13px;
+    color:var(--text-mid);
+    line-height:1.45;
+  }
+
+  /* 2026 dashboard system */
+  :root {
+    --navy:#3a2a22; --navy-soft:#4a372f; --primary:#9b7464; --primary-soft:#f1e6df;
+    --surface:#fffaf7; --canvas:#f5ede4; --line:#eadbd2; --ink:#3a2a22; --muted:#8a7167;
+    --success:#7aab7a; --success-soft:#edf6eb; --warning:#d4aa5a; --warning-soft:#fbf2df;
+    --danger:#d4685a; --danger-soft:#fae9e6; --info:#a18276;
+    --card-bg:#fffaf7; --card-border:#eadbd2; --sidebar-bg:#3a2a22; --sidebar-act:#9b7464;
+    --text-dark:#3a2a22; --text-mid:#7a5c52; --text-light:#b09080; --warm-white:#fffaf7;
+    --green:#7aab7a; --rose:#d4685a; --tan:#9b7464; --cream:#f5ede4; --cream-dark:#eadfd6;
+    --shadow:0 8px 24px rgba(140,100,80,.10);
+  }
+  body { background:var(--canvas); color:var(--ink); font-family:'DM Sans',sans-serif; }
+  body::before { display:none; }
+  .app { background:var(--canvas); }
+  .sidebar { width:224px; background:var(--navy); border:0; padding:20px 14px; gap:5px; color:#fff; }
+  .sidebar-brand { display:flex; align-items:center; gap:10px; padding:0 10px 18px; font-size:17px; font-weight:600; color:#fff; }
+  .sidebar-brand img { width:30px; height:30px; border-radius:7px; object-fit:cover; }
+  .profile-card { background:var(--navy-soft); border:1px solid rgba(255,255,255,.08); border-radius:8px; padding:14px 12px; flex-direction:column; text-align:center; gap:8px; margin-bottom:16px; box-shadow:none; }
+  .avatar { width:52px; height:52px; border-radius:50%; background:#d2a35c; color:#fff; font-family:'DM Sans',sans-serif; font-size:16px; border:2px solid rgba(255,255,255,.78); }
+  .avatar img { border-radius:50%; }
+  .pname { color:#fff; font-size:13px; font-weight:600; }
+  .plevel { color:#aeb5d2; font-size:11px; }
+  .nav-item { color:#c8cee2; border-radius:7px; padding:10px 11px; font-size:13px; gap:11px; position:relative; }
+  .nav-item:hover { background:rgba(255,255,255,.08); color:#fff; }
+  .nav-item.active { background:var(--primary); color:#fff; box-shadow:0 6px 14px rgba(155,116,100,.28); }
+  .nav-icon { width:18px; height:18px; display:inline-flex; align-items:center; justify-content:center; }
+  .nav-icon svg { width:17px; height:17px; stroke-width:1.8; }
+  .practice-header-actions { display:flex; flex-direction:column; align-items:stretch; gap:8px; min-width:190px; }
+  .practice-header-actions .btn { display:flex; align-items:center; justify-content:center; gap:7px; width:100%; }
+  .personalized-plan-btn { color:#fff; border-color:var(--primary); background:var(--primary); }
+  .personalized-plan-btn:hover { color:#fff; border-color:var(--primary-dark,#805e50); background:var(--primary-dark,#805e50); }
+  .badge { background:var(--danger); color:#fff; }
+  .main { padding:28px 32px 36px; background:var(--canvas); }
+  .section.active { animation:fadeUp .2s ease both; }
+  .page-header { margin-bottom:22px; }
+  .page-header h1, .dashboard-greeting h1 { font-family:'DM Sans',sans-serif; font-size:25px; line-height:1.25; font-weight:600; letter-spacing:0; color:var(--ink); }
+  .page-header p, .dashboard-greeting p { color:var(--muted); font-size:12px; margin-top:5px; }
+  .card, .empty-item, .week-nav { background:var(--surface); border:1px solid var(--line); border-radius:8px; box-shadow:var(--shadow); backdrop-filter:none; }
+  .card { padding:20px; }
+  .empty-item { padding:16px; }
+  .card-title { color:#4d5568; font-size:12px; font-weight:600; letter-spacing:0; text-transform:none; margin-bottom:14px; }
+  .skill-card-title { color:var(--ink); font-size:14px; font-weight:600; }
+  .data-note { color:var(--muted); font-size:12px; }
+  .s-label { color:var(--ink); }
+  .s-sub { color:var(--muted); }
+  .dashboard-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:22px; gap:18px; }
+  .metric-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; margin-bottom:16px; }
+  .metric-card { min-height:120px; display:flex; justify-content:space-between; gap:14px; padding:17px; background:var(--surface); border:1px solid var(--line); border-radius:8px; box-shadow:var(--shadow); }
+  .metric-card .metric-value { font-family:'DM Sans',sans-serif; font-size:25px; font-weight:600; margin:5px 0; }
+  .metric-caption { font-size:11px; color:var(--muted); }
+  .metric-caption.good { color:var(--success); }
+  .metric-caption.warn { color:var(--danger); }
+  .metric-icon { width:42px; height:42px; flex:0 0 42px; border-radius:8px; display:flex; align-items:center; justify-content:center; }
+  .metric-icon svg { width:21px; height:21px; stroke-width:1.8; }
+  .metric-icon.purple { background:var(--primary-soft); color:var(--primary); }
+  .metric-icon.red { background:var(--danger-soft); color:var(--danger); }
+  .metric-icon.green { background:var(--success-soft); color:var(--success); }
+  .metric-icon.orange { background:var(--warning-soft); color:var(--warning); }
+  .metric-icon.amber { background:var(--warning-soft); color:var(--warning); }
+  .metric-value span { font-size:12px; color:var(--muted); font-weight:500; }
+  .metric-value.danger { color:var(--danger); }
+  .metric-sub { color:var(--muted); font-size:11px; }
+  .metric-sub.positive { color:var(--success); }
+  .dashboard-grid { display:grid; grid-template-columns:minmax(0,1.35fr) minmax(320px,.95fr); gap:16px; margin-bottom:16px; }
+  .panel-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:18px; }
+  .panel-heading h2 { font-size:14px; font-weight:600; }
+  .panel-heading p { font-size:11px; color:var(--muted); margin-top:3px; }
+  .skill-dashboard-list { display:flex; flex-direction:column; gap:14px; }
+  .skill-dashboard-row { display:grid; grid-template-columns:32px minmax(0,1fr); align-items:center; gap:11px; }
+  .skill-mark { width:30px; height:30px; border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:600; }
+  .skill-dashboard-info { min-width:0; }
+  .skill-dashboard-meta { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:7px; font-size:11px; }
+  .skill-dashboard-meta strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--ink); }
+  .skill-dashboard-meta span { color:var(--muted); font-weight:600; }
+  .skill-dashboard-row .skill-bar { height:6px; }
+  .skill-score { text-align:right; font-size:12px; font-weight:600; }
+  .health-layout { display:grid; grid-template-columns:150px 1fr; align-items:center; gap:22px; }
+  .health-ring { --score:0; width:138px; height:138px; border-radius:50%; background:conic-gradient(var(--success) 0 calc(var(--score)*1%), var(--warning) calc(var(--score)*1%) 82%, var(--danger) 82% 100%); display:grid; place-items:center; position:relative; }
+  .health-ring::after { content:''; position:absolute; inset:16px; border-radius:50%; background:#fff; }
+  .health-ring > strong { position:relative; z-index:1; text-align:center; font-size:27px; font-weight:600; }
+  .health-ring > span { position:absolute; z-index:1; top:82px; font-size:10px; color:var(--muted); }
+  .health-legend { display:flex; flex-direction:column; gap:10px; }
+  .health-legend > div { display:grid; grid-template-columns:10px 1fr auto; gap:8px; align-items:center; font-size:11px; }
+  .health-legend .dot { width:8px; height:8px; border-radius:50%; }
+  .health-legend .dot.strong { background:var(--success); }
+  .health-legend .dot.stable { background:var(--warning); }
+  .health-legend .dot.danger { background:var(--danger); }
+  .improve-note { margin-top:16px; padding:12px 14px; border-radius:7px; background:#eef8f3; color:#397d5b; font-size:11px; display:flex; align-items:flex-start; gap:10px; }
+  .improve-note svg { width:18px; height:18px; flex:0 0 18px; }
+  .improve-note p { color:#65907a; margin-top:2px; }
+  .text-link { border:0; background:transparent; color:var(--primary); font:inherit; font-size:11px; display:inline-flex; align-items:center; gap:5px; cursor:pointer; padding:3px; }
+  .text-link svg { width:13px; height:13px; }
+  .plan-back { width:34px; height:34px; flex:0 0 34px; display:inline-flex; align-items:center; justify-content:center; border:1px solid var(--line); border-radius:7px; background:#fff; color:var(--ink); cursor:pointer; }
+  .plan-back:hover { background:var(--primary-soft); color:var(--primary); border-color:rgba(155,116,100,.22); }
+  .plan-back svg { width:18px; height:18px; }
+  .analytics-toolbar { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:20px; }
+  .range-control { display:inline-flex; padding:3px; border:1px solid var(--line); border-radius:7px; background:var(--surface); }
+  .range-btn { border:0; background:transparent; color:var(--muted); padding:7px 11px; border-radius:5px; font:inherit; font-size:11px; font-weight:600; cursor:pointer; }
+  .range-btn.active { background:var(--primary); color:#fff; }
+  .analytics-metrics { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-bottom:16px; }
+  .analytics-stat { padding:16px 17px; }
+  .analytics-stat strong { display:block; color:var(--ink); font-size:22px; margin:6px 0 2px; }
+  .analytics-stat span { color:var(--muted); font-size:11px; }
+  .analytics-grid { display:grid; grid-template-columns:minmax(0,1.55fr) minmax(300px,.85fr); gap:16px; margin-bottom:16px; }
+  .analytics-grid.equal { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .chart-shell { position:relative; height:270px; }
+  .chart-shell.short { height:235px; }
+  .chart-empty { height:100%; display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:12px; text-align:center; padding:20px; }
+  .analytics-detail { min-height:92px; display:flex; align-items:center; gap:14px; }
+  .analytics-detail-icon { width:42px; height:42px; flex:0 0 42px; border-radius:8px; display:flex; align-items:center; justify-content:center; background:var(--primary-soft); color:var(--primary); }
+  .analytics-detail-icon svg { width:20px; height:20px; }
+  .analytics-detail h3 { font-size:13px; margin-bottom:4px; }
+  .analytics-detail p { color:var(--muted); font-size:11px; line-height:1.5; }
+  .heatmap-wrap { overflow-x:auto; padding-bottom:4px; }
+  .heatmap-labels { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; min-width:350px; margin-bottom:7px; color:var(--muted); font-size:9px; text-align:center; }
+  .activity-heatmap { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; min-width:350px; }
+  .heat-cell { aspect-ratio:1.35; min-height:26px; border:1px solid #eadfd6; border-radius:5px; background:#f3ede8; cursor:pointer; position:relative; transition:transform .16s,border-color .16s,box-shadow .16s; }
+  .heat-cell:hover { transform:translateY(-2px); border-color:var(--primary); box-shadow:0 5px 12px rgba(140,100,80,.15); }
+  .heat-cell.level-1 { background:#f3b3a7; border-color:#e89a8d; }
+  .heat-cell.level-2 { background:#f2cd76; border-color:#dfb956; }
+  .heat-cell.level-3 { background:#a9cf91; border-color:#90ba77; }
+  .heat-cell.level-4 { background:#5f9f78; border-color:#4d8965; }
+  .heat-legend { display:flex; align-items:center; justify-content:flex-end; gap:5px; color:var(--muted); font-size:9px; margin-top:11px; }
+  .heat-legend i { width:13px; height:13px; border-radius:3px; border:1px solid var(--line); }
+  .achievement-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }
+  .achievement-card { min-height:190px; display:flex; flex-direction:column; }
+  .achievement-card.locked { opacity:.68; filter:saturate(.55); }
+  .achievement-icon { width:44px; height:44px; border-radius:9px; display:flex; align-items:center; justify-content:center; background:var(--primary-soft); color:var(--primary); margin-bottom:18px; }
+  .achievement-card.earned .achievement-icon { background:var(--warning-soft); color:#a87820; }
+  .achievement-icon svg { width:22px; height:22px; }
+  .achievement-card h3 { font-size:15px; margin-bottom:6px; }
+  .achievement-card p { color:var(--muted); font-size:11px; line-height:1.55; flex:1; }
+  .achievement-progress { margin-top:18px; }
+  .achievement-progress .skill-bar { margin-bottom:7px; }
+  .achievement-progress span { color:var(--muted); font-size:10px; }
+  .review-mistakes-btn { display:inline-flex; align-items:center; gap:7px; }
+  .review-mistakes-btn svg { width:16px; height:16px; }
+  .drill-metrics { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin:14px 0; }
+  .drill-metric { padding:11px; border:1px solid var(--line); border-radius:7px; background:rgba(255,255,255,.45); }
+  .drill-metric strong { display:block; font-size:15px; margin-bottom:3px; }
+  .drill-metric span { color:var(--muted); font-size:9px; }
+  .module-insight-list { display:flex; flex-wrap:wrap; gap:7px; }
+  .module-insight { padding:7px 9px; border-radius:6px; background:var(--primary-soft); color:var(--text-mid); font-size:10px; }
+  .module-insight b { color:var(--ink); }
+  .recent-alert-list { display:flex; flex-direction:column; gap:8px; }
+  .recent-alert-row { display:grid; grid-template-columns:34px 1fr auto; align-items:center; gap:10px; padding:11px; border-radius:7px; }
+  .recent-alert-row.high { background:#fff3f5; }
+  .recent-alert-row:not(.high) { background:#fff8ec; }
+  .recent-alert-row strong { font-size:12px; }
+  .recent-alert-row p { color:var(--muted); font-size:11px; margin-top:2px; }
+  .recent-alert-row > span { color:var(--muted); font-size:10px; text-transform:capitalize; }
+  .alert-symbol { width:30px; height:30px; border-radius:7px; display:flex; align-items:center; justify-content:center; background:var(--warning-soft); color:var(--warning); }
+  .recent-alert-row.high .alert-symbol { background:var(--danger-soft); color:var(--danger); }
+  .alert-symbol svg { width:16px; height:16px; }
+  .empty-alerts { display:flex; align-items:center; gap:11px; padding:12px; color:var(--success); background:var(--success-soft); border-radius:7px; }
+  .empty-alerts svg { width:20px; height:20px; }
+  .empty-alerts p { color:#65907a; font-size:11px; margin-top:2px; }
+  .recent-alert-row.medium { background:#fff8ec; }
+  .recent-alert-icon { width:30px; height:30px; border-radius:7px; display:flex; align-items:center; justify-content:center; }
+  .recent-alert-icon svg { width:16px; height:16px; }
+  .recent-alert-row.high .recent-alert-icon { color:var(--danger); background:#ffe5e9; }
+  .recent-alert-row.medium .recent-alert-icon { color:var(--warning); background:#fff0d0; }
+  .g3 { grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }
+  .g2 { grid-template-columns:minmax(0,1fr) 300px; gap:16px; }
+  .g2e { gap:14px; }
+  .chip { border-radius:7px; background:#fff; border-color:var(--line); color:var(--muted); }
+  .chip.active { background:var(--primary); color:#fff; }
+  .btn { border-radius:7px; border-color:var(--line); background:#fff; color:var(--ink); font-weight:500; }
+  .btn:hover { background:var(--primary); color:#fff; }
+  .tab-strip { border-radius:7px; border-color:var(--line); background:#fff; }
+  .tab.active { background:var(--primary); }
+  .status-pill { letter-spacing:0; text-transform:none; }
+  .skill-fill { background:var(--primary); }
+  .skill-fill.strong { background:var(--success); }
+  .skill-fill.stable { background:var(--warning); }
+  .skill-fill.decaying { background:var(--danger); }
+  .day-pill.active { background:var(--primary); }
+  .week-nav { padding:12px 16px; }
+  .week-label .day { font-family:'DM Sans',sans-serif; font-size:14px; font-weight:600; }
+  .avatar-lg { border-radius:8px; font-family:'DM Sans',sans-serif; }
+  .nav-item[onclick*="'history'"], .nav-item[onclick*="'settings'"] { order:initial; }
+  @media (max-width:1100px) { .metric-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .dashboard-grid { grid-template-columns:1fr; } .health-layout { grid-template-columns:138px minmax(0,1fr); } }
+  @media (max-width:820px) {
+    .sidebar { width:76px; padding:16px 10px; }
+    .sidebar-brand span, .profile-card > div:last-child, .nav-label { display:none; }
+    .sidebar-brand { justify-content:center; padding:0 0 14px; }
+    .profile-card { padding:9px; } .avatar { width:42px; height:42px; }
+    .nav-item { justify-content:center; padding:11px; } .nav-icon { width:20px; height:20px; }
+    .badge { position:absolute; margin:0; transform:translate(12px,-10px); }
+    .main { padding:22px 20px 30px; }
+    .analytics-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .analytics-grid, .analytics-grid.equal { grid-template-columns:1fr; }
+    .achievement-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  }
+  @media (max-width:620px) {
+    body { height:auto; overflow:auto; } .app { display:block; overflow:visible; }
+    .sidebar { position:sticky; top:0; z-index:20; width:100%; height:auto; flex-direction:row; overflow-x:auto; padding:9px 10px; }
+    .sidebar-brand, .profile-card { display:none; }
+    .nav-item { flex:0 0 44px; min-width:44px; }
+    .main { overflow:visible; padding:18px 14px 28px; }
+    .metric-grid { grid-template-columns:1fr; } .metric-card { min-height:104px; }
+    .health-layout { grid-template-columns:1fr; justify-items:center; }
+    .health-legend { width:100%; }
+    .skill-dashboard-row { grid-template-columns:30px minmax(0,1fr); }
+    .panel-heading { align-items:center; }
+    .text-link { white-space:nowrap; }
+    .g3, .g2, .g2e { grid-template-columns:1fr; }
+    .analytics-toolbar { flex-direction:column; }
+    .analytics-metrics { grid-template-columns:1fr; }
+    .range-control { width:100%; }
+    .range-btn { flex:1; }
+    .achievement-grid, .drill-metrics { grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <nav class="sidebar">
+    <div class="profile-card">
+      <div class="avatar">AS</div>
+      <div>
+        <div class="pname">Aman Shankar</div>
+        <div class="plevel">↑ Skill Rising</div>
+      </div>
+    </div>
+    <div class="nav-item active"  onclick="nav('dashboard',this)"><span class="nav-icon">⊞</span> Dashboard</div>
+    <div class="nav-item"         onclick="nav('skills',this)">   <span class="nav-icon">◈</span> My Skills</div>
+    <div class="nav-item"         onclick="nav('alerts',this)">   <span class="nav-icon">⚑</span> Alerts <span class="badge">3</span></div>
+    <div class="nav-item"         onclick="nav('plan',this)">     <span class="nav-icon">▦</span> Practice Plan</div>
+    <div class="nav-item"         onclick="nav('analytics',this)"><span class="nav-icon">⬡</span> Analytics</div>
+    <div class="nav-item"         onclick="nav('history',this)">  <span class="nav-icon">◷</span> History</div>
+    <div class="nav-item"         onclick="nav('settings',this)"> <span class="nav-icon">⚙</span> Settings</div>
+    <div class="nav-item" onclick="location.href='ai-coach.html'"><span class="nav-icon">✦</span> AI Coach</div>
+  </nav>
+
+  <main class="main">
+
+    <!-- DASHBOARD -->
+    <section class="section active" id="dashboard">
+      <div class="page-header"><h1>Dashboard</h1><p>Your skill health at a glance</p></div>
+
+      <div class="g3">
+        <div class="card">
+          <div class="card-title">Skill Health</div>
+          <div class="ph" style="height:42px;width:55%;margin-bottom:8px"></div>
+          <div class="ph" style="height:10px;width:38%"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">At-Risk Skills</div>
+          <div class="ph" style="height:42px;width:55%;margin-bottom:8px"></div>
+          <div class="ph" style="height:10px;width:38%"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Streak</div>
+          <div class="ph" style="height:42px;width:55%;margin-bottom:8px"></div>
+          <div class="ph" style="height:10px;width:38%"></div>
+        </div>
+      </div>
+
+      <div class="g2">
+        <div class="card">
+          <div class="card-title">Skill Breakdown</div>
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div><div class="ph" style="height:10px;width:48%;margin-bottom:7px"></div><div class="ph pill" style="height:7px;width:100%"></div></div>
+            <div><div class="ph" style="height:10px;width:55%;margin-bottom:7px"></div><div class="ph pill" style="height:7px;width:100%"></div></div>
+            <div><div class="ph" style="height:10px;width:42%;margin-bottom:7px"></div><div class="ph pill" style="height:7px;width:100%"></div></div>
+            <div><div class="ph" style="height:10px;width:50%;margin-bottom:7px"></div><div class="ph pill" style="height:7px;width:100%"></div></div>
+            <div><div class="ph" style="height:10px;width:44%;margin-bottom:7px"></div><div class="ph pill" style="height:7px;width:100%"></div></div>
+          </div>
+        </div>
+        <div class="card" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px">
+          <div class="card-title" style="align-self:flex-start;margin-bottom:0">Health Overview</div>
+          <div class="ph circle" style="width:108px;height:108px"></div>
+          <div style="width:100%;display:flex;flex-direction:column;gap:8px">
+            <div class="ph" style="height:10px;width:58%"></div>
+            <div class="ph" style="height:10px;width:50%"></div>
+            <div class="ph" style="height:10px;width:54%"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MY SKILLS -->
+    <section class="section" id="skills">
+      <div class="page-header"><h1>My Skills</h1><p>Monitor and manage your tracked skills</p></div>
+
+      <div class="chip-row">
+        <button class="chip active" data-filter="all">All</button>
+        <button class="chip" data-filter="strong">Strong</button>
+        <button class="chip" data-filter="risk">At Risk</button>
+      </div>
+
+      <div class="g2e">
+        <div class="card">
+          <div class="row" style="margin-bottom:12px">
+            <div class="ph" style="height:14px;width:48%"></div>
+            <div style="margin-left:auto"><div class="ph pill" style="height:20px;width:54px"></div></div>
+          </div>
+          <div class="ph" style="height:10px;width:65%;margin-bottom:12px"></div>
+          <div class="ph pill" style="height:7px;width:100%;margin-bottom:12px"></div>
+          <div class="ph" style="height:10px;width:38%"></div>
+        </div>
+        <div class="card">
+          <div class="row" style="margin-bottom:12px">
+            <div class="ph" style="height:14px;width:48%"></div>
+            <div style="margin-left:auto"><div class="ph pill" style="height:20px;width:54px"></div></div>
+          </div>
+          <div class="ph" style="height:10px;width:65%;margin-bottom:12px"></div>
+          <div class="ph pill" style="height:7px;width:100%;margin-bottom:12px"></div>
+          <div class="ph" style="height:10px;width:38%"></div>
+        </div>
+        <div class="card">
+          <div class="row" style="margin-bottom:12px">
+            <div class="ph" style="height:14px;width:48%"></div>
+            <div style="margin-left:auto"><div class="ph pill" style="height:20px;width:54px"></div></div>
+          </div>
+          <div class="ph" style="height:10px;width:65%;margin-bottom:12px"></div>
+          <div class="ph pill" style="height:7px;width:100%;margin-bottom:12px"></div>
+          <div class="ph" style="height:10px;width:38%"></div>
+        </div>
+        <div class="card">
+          <div class="row" style="margin-bottom:12px">
+            <div class="ph" style="height:14px;width:48%"></div>
+            <div style="margin-left:auto"><div class="ph pill" style="height:20px;width:54px"></div></div>
+          </div>
+          <div class="ph" style="height:10px;width:65%;margin-bottom:12px"></div>
+          <div class="ph pill" style="height:7px;width:100%;margin-bottom:12px"></div>
+          <div class="ph" style="height:10px;width:38%"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ALERTS -->
+    <section class="section" id="alerts">
+      <div class="page-header"><h1>Alerts</h1><p>Items needing your attention</p></div>
+
+      <div class="empty-item">
+        <div class="row">
+          <div class="ph circle" style="width:10px;height:10px;flex-shrink:0"></div>
+          <div class="ph" style="height:13px;width:55%"></div>
+          <div style="margin-left:auto"><div class="ph pill" style="height:20px;width:58px"></div></div>
+        </div>
+        <div class="ph" style="height:10px;width:78%"></div>
+        <div class="ph" style="height:10px;width:46%"></div>
+      </div>
+
+      <div class="empty-item">
+        <div class="row">
+          <div class="ph circle" style="width:10px;height:10px;flex-shrink:0"></div>
+          <div class="ph" style="height:13px;width:50%"></div>
+          <div style="margin-left:auto"><div class="ph pill" style="height:20px;width:58px"></div></div>
+        </div>
+        <div class="ph" style="height:10px;width:72%"></div>
+        <div class="ph" style="height:10px;width:42%"></div>
+      </div>
+
+      <div class="empty-item">
+        <div class="row">
+          <div class="ph circle" style="width:10px;height:10px;flex-shrink:0"></div>
+          <div class="ph" style="height:13px;width:45%"></div>
+          <div style="margin-left:auto"><div class="ph pill" style="height:20px;width:58px"></div></div>
+        </div>
+        <div class="ph" style="height:10px;width:68%"></div>
+        <div class="ph" style="height:10px;width:38%"></div>
+      </div>
+    </section>
+
+    <!-- PRACTICE PLAN -->
+    <section class="section" id="plan">
+      <div class="page-header"><h1>Practice Plan</h1><p>Your focused sessions for today</p></div>
+
+      <div class="week-nav">
+        <div class="ph" style="width:78px;height:26px;border-radius:8px"></div>
+        <div class="day-pills">
+          <div class="day-pill">Su</div>
+          <div class="day-pill">Mo</div>
+          <div class="day-pill">Tu</div>
+          <div class="day-pill">We</div>
+          <div class="day-pill">Th</div>
+          <div class="day-pill">Fr</div>
+          <div class="day-pill">Sa</div>
+        </div>
+        <div class="week-label">
+          <div class="day">Today</div>
+          <div class="meta">No sessions yet</div>
+        </div>
+        <div class="ph" style="width:88px;height:28px;border-radius:10px"></div>
+      </div>
+
+      <div class="empty-item">
+        <div class="row">
+          <div class="ph circle" style="width:22px;height:22px;flex-shrink:0"></div>
+          <div class="ph" style="height:14px;flex:1;max-width:200px"></div>
+          <div style="margin-left:auto"><div class="ph" style="width:76px;height:28px;border-radius:10px"></div></div>
+        </div>
+        <div class="ph" style="height:10px;width:40%"></div>
+      </div>
+
+      <div class="empty-item">
+        <div class="row">
+          <div class="ph circle" style="width:22px;height:22px;flex-shrink:0"></div>
+          <div class="ph" style="height:14px;flex:1;max-width:175px"></div>
+          <div style="margin-left:auto"><div class="ph" style="width:76px;height:28px;border-radius:10px"></div></div>
+        </div>
+        <div class="ph" style="height:10px;width:40%"></div>
+      </div>
+
+      <div class="empty-item">
+        <div class="row">
+          <div class="ph circle" style="width:22px;height:22px;flex-shrink:0"></div>
+          <div class="ph" style="height:14px;flex:1;max-width:155px"></div>
+          <div style="margin-left:auto"><div class="ph" style="width:76px;height:28px;border-radius:10px"></div></div>
+        </div>
+        <div class="ph" style="height:10px;width:40%"></div>
+      </div>
+    </section>
+
+    <!-- ANALYTICS -->
+    <section class="section" id="analytics">
+      <div class="analytics-top">
+        <div class="page-header" style="margin-bottom:0"><h1>Analytics</h1><p>Track progress and spot decay trends</p></div>
+        <div class="filter-row">
+          <button class="filter-btn">Last 60 days ▾</button>
+          <button class="filter-btn">All Skills ▾</button>
+        </div>
+      </div>
+
+      <div class="g2" style="margin-bottom:20px">
+        <div class="card">
+          <div class="card-title">Skill Health Score Over Time</div>
+          <div class="ph" style="width:100%;height:128px;border-radius:12px;margin-bottom:10px"></div>
+          <div class="row">
+            <div class="ph" style="height:10px;width:42px"></div>
+            <div class="ph" style="height:10px;width:42px;margin:0 auto"></div>
+            <div class="ph" style="height:10px;width:42px"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Decay Watchlist</div>
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div class="row"><div class="ph circle" style="width:10px;height:10px;flex-shrink:0"></div><div class="ph" style="height:10px;flex:1"></div><div class="ph" style="height:10px;width:30px"></div></div>
+            <div class="row"><div class="ph circle" style="width:10px;height:10px;flex-shrink:0"></div><div class="ph" style="height:10px;flex:1"></div><div class="ph" style="height:10px;width:30px"></div></div>
+            <div class="row"><div class="ph circle" style="width:10px;height:10px;flex-shrink:0"></div><div class="ph" style="height:10px;flex:1"></div><div class="ph" style="height:10px;width:30px"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="g2">
+        <div class="card">
+          <div class="card-title">Error Patterns</div>
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div><div class="ph" style="height:10px;width:38%;margin-bottom:7px"></div><div class="ph pill" style="height:7px;width:100%"></div></div>
+            <div><div class="ph" style="height:10px;width:32%;margin-bottom:7px"></div><div class="ph pill" style="height:7px;width:100%"></div></div>
+            <div><div class="ph" style="height:10px;width:44%;margin-bottom:7px"></div><div class="ph pill" style="height:7px;width:100%"></div></div>
+          </div>
+        </div>
+        <div class="card" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px">
+          <div class="card-title" style="align-self:flex-start;margin-bottom:0">Attempts to Solve</div>
+          <div class="ph circle" style="width:96px;height:96px"></div>
+          <div class="ph" style="height:10px;width:60%"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- HISTORY -->
+    <section class="section" id="history">
+      <div class="page-header"><h1>History</h1><p>Your past assessment attempts by date</p></div>
+      <div class="card">
+        <div class="card-title">Attempt Timeline</div>
+        <div class="data-note">Loading attempt history...</div>
+      </div>
+    </section>
+
+    <!-- ACHIEVEMENTS -->
+    <section class="section" id="achievements">
+      <div class="page-header"><h1>Achievements</h1><p>Milestones earned through consistent practice</p></div>
+      <div class="card"><div class="data-note">Loading achievements...</div></div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section class="section" id="settings">
+      <div class="page-header"><h1>Settings</h1><p>Manage your profile and preferences</p></div>
+
+      <div class="tab-strip">
+        <button class="tab active" onclick="settingsTab('account',this)">Account Settings</button>
+        <button class="tab"        onclick="settingsTab('notif',this)">Notifications</button>
+      </div>
+
+      <div id="s-account">
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-title">Profile</div>
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:14px">
+              <div class="avatar-lg">AS</div>
+              <div>
+                <div class="ph" style="height:13px;width:120px;margin-bottom:7px"></div>
+                <div class="ph" style="height:10px;width:160px"></div>
+              </div>
+            </div>
+            <button class="btn">Edit</button>
+          </div>
+          <hr class="div">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div class="ph" style="height:10px;width:88px"></div>
+            <div class="ph" style="height:10px;width:52px"></div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-title">Security</div>
+          <div class="settings-row">
+            <div>
+              <div class="s-label">Password</div>
+              <div class="s-sub">Last changed 30 days ago</div>
+            </div>
+            <div onclick="window.location.href='/change-password.html'" style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-light);cursor:pointer">
+              Change Password <span>›</span>
+            </div>
+          </div>
+          <div class="settings-row">
+            <div>
+              <div class="s-label">Two-Factor Authentication</div>
+              <div class="s-sub">Adds an extra layer of protection</div>
+            </div>
+            <div class="toggle" onclick="this.classList.toggle('off')"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Account Actions</div>
+          <div style="display:flex;gap:12px;margin-top:4px">
+            <button class="btn" onclick="logout()">Logout</button>
+            <button class="btn btn-danger" onclick="deleteAccount()">Delete Account</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="s-notif" style="display:none">
+        <div class="card">
+          <div class="card-title">Notification Preferences</div>
+          <div id="notification-save-status" class="s-sub" style="min-height:18px;margin-bottom:4px"></div>
+          <div class="settings-row">
+            <div><div class="s-label">Skill Decay Alerts</div><div class="s-sub">Notified when a skill drops below threshold</div></div>
+            <button type="button" class="toggle" data-preference="skillDecayAlerts" onclick="updateNotificationPreference(this)" aria-label="Toggle skill decay alerts"></button>
+          </div>
+          <div class="settings-row">
+            <div><div class="s-label">Daily Practice Reminders</div><div class="s-sub">Get reminded to complete your practice plan</div></div>
+            <button type="button" class="toggle" data-preference="dailyPracticeReminders" onclick="updateNotificationPreference(this)" aria-label="Toggle daily practice reminders"></button>
+          </div>
+          <div class="settings-row">
+            <div><div class="s-label">Weekly Progress Report</div><div class="s-sub">Summary delivered every Monday morning</div></div>
+            <button type="button" class="toggle off" data-preference="weeklyProgressReport" onclick="updateNotificationPreference(this)" aria-label="Toggle weekly progress report"></button>
+          </div>
+          <div class="settings-row">
+            <div><div class="s-label">Streak Notifications</div><div class="s-sub">Alert when your streak is about to break</div></div>
+            <button type="button" class="toggle" data-preference="streakNotifications" onclick="updateNotificationPreference(this)" aria-label="Toggle streak notifications"></button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+  function refreshIcons() {
+    if (window.lucide) window.lucide.createIcons({ attrs: { 'stroke-width': 1.8 } });
+  }
+
+  function buildSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    const currentUser = getCurrentUser ? getCurrentUser() : null;
+    const adminNav = currentUser && currentUser.role === 'ADMIN'
+      ? `<div class="nav-item" onclick="window.location.href='/admin.html'"><span class="nav-icon"><i data-lucide="list-checks"></i></span><span class="nav-label">Question Manager</span></div>
+         <div class="nav-item" onclick="window.location.href='/admin-users.html'"><span class="nav-icon"><i data-lucide="users"></i></span><span class="nav-label">User Management</span></div>`
+      : '';
+    sidebar.innerHTML = `
+      <div class="sidebar-brand"><img src="./SkillPulse logo.png" alt=""><span>SkillPulse</span></div>
+      <div class="profile-card">
+        <div class="avatar">AS</div>
+        <div><div class="pname">Aman Shankar</div><div class="plevel">Skill Rising</div></div>
+      </div>
+      <div class="nav-item active" onclick="nav('dashboard',this)"><span class="nav-icon"><i data-lucide="layout-dashboard"></i></span><span class="nav-label">Dashboard</span></div>
+      <div class="nav-item" onclick="nav('skills',this)"><span class="nav-icon"><i data-lucide="gem"></i></span><span class="nav-label">My Skills</span></div>
+      <div class="nav-item" onclick="nav('plan',this)"><span class="nav-icon"><i data-lucide="clipboard-list"></i></span><span class="nav-label">Practice Plan</span></div>
+      <div class="nav-item" onclick="nav('alerts',this)"><span class="nav-icon"><i data-lucide="bell"></i></span><span class="nav-label">Alerts</span><span class="badge">0</span></div>
+      <div class="nav-item" onclick="nav('analytics',this)"><span class="nav-icon"><i data-lucide="chart-no-axes-combined"></i></span><span class="nav-label">Analytics</span></div>
+      <div class="nav-item" onclick="nav('history',this)"><span class="nav-icon"><i data-lucide="history"></i></span><span class="nav-label">History</span></div>
+      <div class="nav-item" onclick="nav('achievements',this)"><span class="nav-icon"><i data-lucide="trophy"></i></span><span class="nav-label">Achievements</span></div>
+      ${adminNav}
+      <div class="nav-item" onclick="nav('settings',this)"><span class="nav-icon"><i data-lucide="settings"></i></span><span class="nav-label">Settings</span></div>
+    `;
+    refreshIcons();
+  }
+
+  let profileUpdateFlash = new URLSearchParams(window.location.search).get('profileUpdated') === '1';
+
+  if (profileUpdateFlash && window.history && window.history.replaceState) {
+    window.history.replaceState({}, document.title, window.location.pathname + window.location.hash);
+  }
+
+  buildSidebar();
+
+  function dismissProfileUpdateFlash() {
+    profileUpdateFlash = false;
+    const banner = document.getElementById('profile-update-flash');
+    if (banner) banner.remove();
+  }
+
+  function nav(id, el) {
+    if (id !== 'settings') dismissProfileUpdateFlash();
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    el.classList.add('active');
+    if (id === 'plan' && practicePlans.length) renderPlanSubjects();
+  }
+
+  function settingsTab(id, el) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('s-account').style.display = id === 'account' ? 'block' : 'none';
+    document.getElementById('s-notif').style.display   = id === 'notif'   ? 'block' : 'none';
+    if (id === 'notif') loadNotificationPreferences();
+  }
+
+  let notificationPreferencesLoaded = false;
+
+  async function loadNotificationPreferences() {
+    if (notificationPreferencesLoaded) return;
+    const user = getCurrentUser();
+    if (!user || !user.token) return;
+    const status = document.getElementById('notification-save-status');
+    try {
+      const response = await fetch('/api/notifications/preferences?token=' + encodeURIComponent(user.token));
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.message || 'Unable to load notification preferences.');
+      document.querySelectorAll('[data-preference]').forEach(toggle => {
+        const enabled = Boolean(data[toggle.dataset.preference]);
+        toggle.classList.toggle('off', !enabled);
+        toggle.setAttribute('aria-pressed', String(enabled));
+      });
+      notificationPreferencesLoaded = true;
+    } catch (error) {
+      if (status) status.textContent = error.message || 'Unable to load notification preferences.';
+    }
+  }
+
+  async function updateNotificationPreference(toggle) {
+    const user = getCurrentUser();
+    if (!user || !user.token || toggle.disabled) return;
+    const key = toggle.dataset.preference;
+    const enabled = toggle.classList.contains('off');
+    const status = document.getElementById('notification-save-status');
+    toggle.disabled = true;
+    if (status) status.textContent = 'Saving...';
+    try {
+      const response = await fetch('/api/notifications/preferences?token=' + encodeURIComponent(user.token), {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ [key]: enabled })
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.message || 'Unable to save preference.');
+      toggle.classList.toggle('off', !Boolean(data[key]));
+      toggle.setAttribute('aria-pressed', String(Boolean(data[key])));
+      if (status) status.textContent = 'Preferences saved.';
+      setTimeout(() => {
+        if (status && status.textContent === 'Preferences saved.') status.textContent = '';
+      }, 2200);
+    } catch (error) {
+      if (status) status.textContent = error.message || 'Unable to save preference.';
+    } finally {
+      toggle.disabled = false;
+    }
+  }
+
+  document.querySelectorAll('.chip').forEach(c => {
+    c.addEventListener('click', () => {
+      c.closest('.chip-row').querySelectorAll('.chip').forEach(x => x.classList.remove('active'));
+      c.classList.add('active');
+      setSkillFilter(c.dataset.filter || 'all');
+    });
+  });
+
+  async function logout() {
+    const stored = sessionStorage.getItem('sp_current_user');
+    let token = null;
+
+    try {
+      token = stored ? JSON.parse(stored).token : null;
+    } catch (e) {
+      token = null;
+    }
+
+    if (token) {
+      try {
+        await fetch('/api/auth/logout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token })
+        });
+      } catch (e) {}
+    }
+
+    sessionStorage.removeItem('sp_current_user');
+    window.location.href = '/login.html';
+  }
+
+  async function deleteAccount() {
+    const stored = sessionStorage.getItem('sp_current_user');
+    let token = null;
+
+    try {
+      token = stored ? JSON.parse(stored).token : null;
+    } catch (e) {
+      token = null;
+    }
+
+    if (!token) {
+      window.location.href = '/login.html';
+      return;
+    }
+
+    const confirmed = confirm('Are you sure you want to delete your SkillPulse account? This will remove your credentials from the database.');
+    if (!confirmed) return;
+
+    const password = prompt('Please enter your password to confirm account deletion.');
+    if (!password) return;
+
+    try {
+      const response = await fetch('/api/auth/delete-account', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, password })
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.message || 'Unable to delete account.');
+
+      alert(data.message || 'Account deleted successfully.');
+      sessionStorage.removeItem('sp_current_user');
+      window.location.href = '/login.html';
+    } catch (err) {
+      alert(err.message || 'Unable to delete account.');
+    }
+  }
+</script>
+<script>
+  (function requireLogin() {
+    try {
+      if (!sessionStorage.getItem('sp_current_user')) {
+        window.location.href = '/login.html';
+      }
+    } catch (e) {
+      window.location.href = '/login.html';
+    }
+  })();
+</script>
+<script>
+  function getCurrentUser() {
+    try {
+      const stored = sessionStorage.getItem('sp_current_user');
+      return stored ? JSON.parse(stored) : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  async function getFreshCurrentUser() {
+    const user = getCurrentUser();
+    if (!user || !user.token) return user;
+
+    try {
+      const response = await fetch('/api/auth/me?token=' + encodeURIComponent(user.token));
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) return user;
+
+      const freshUser = {
+        ...user,
+        ...data,
+        token: user.token
+      };
+      sessionStorage.setItem('sp_current_user', JSON.stringify(freshUser));
+      return freshUser;
+    } catch (e) {
+      return user;
+    }
+  }
+
+  function initials(name) {
+    return (name || 'User')
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map(part => part.charAt(0).toUpperCase())
+      .join('') || 'U';
+  }
+
+  function avatarMarkup(user, name, className) {
+    const photo = user && user.profilePhoto;
+    if (photo) {
+      return `<img src="${photo}" alt="${name}" class="${className}" style="object-fit:cover">`;
+    }
+    return `<div class="${className}">${initials(name)}</div>`;
+  }
+
+  function statusClass(status) {
+    return String(status || '').toLowerCase();
+  }
+
+  function levelText(score) {
+    if (score >= 80) return 'Skill Rising';
+    if (score >= 60) return 'Skill Stable';
+    return 'Needs Focus';
+  }
+
+  function renderProfile(summary, user) {
+    const name = summary.user || user.name || 'SkillPulse User';
+    const email = user.email || '';
+    const short = initials(name);
+    const sidebarAvatar = document.querySelector('.profile-card .avatar');
+    if (sidebarAvatar) {
+      if (user.profilePhoto) {
+        sidebarAvatar.innerHTML = `<img src="${user.profilePhoto}" alt="${name}">`;
+      } else {
+        sidebarAvatar.textContent = short;
+      }
+    }
+    document.querySelectorAll('.avatar-lg').forEach(el => {
+      if (!user.profilePhoto) el.textContent = short;
+    });
+    document.querySelector('.pname').textContent = name;
+    document.querySelector('.plevel').textContent = levelText(summary.overallHealth);
+
+    const profileCard = document.querySelector('#s-account .card');
+    if (profileCard) {
+      profileCard.innerHTML = `
+        <div class="card-title">Profile</div>
+        ${profileUpdateFlash
+          ? '<div id="profile-update-flash" class="data-note" style="margin-bottom:14px;color:#5a8f55;background:rgba(122,171,122,.14);border:1px solid rgba(122,171,122,.25);border-radius:10px;padding:10px 12px">Your profile was updated.</div>'
+          : ''}
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div style="display:flex;align-items:center;gap:14px">
+            ${avatarMarkup(user, name, 'avatar-lg')}
+            <div>
+              <div class="skill-card-title">${name}</div>
+              <div class="s-sub">${email}</div>
+              ${user.phoneNumber ? `<div class="s-sub">${user.phoneCountryCode || ''} ${user.phoneNumber}</div>` : ''}
+            </div>
+          </div>
+          <button class="btn" onclick="window.location.href='/edit-profile.html?v=warm-ui-1'">Edit</button>
+        </div>
+        <hr class="div">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+          <div class="data-note">${summary.skillsTracked} skills tracked</div>
+          <div class="data-note">${summary.overallHealth}% overall health</div>
+        </div>
+      `;
+    }
+  }
+
+  function renderAchievements(summary) {
+    const achievements = summary.achievements || [];
+    const earned = achievements.filter(item => item.earned).length;
+    document.getElementById('achievements').innerHTML = `
+      <div class="analytics-toolbar">
+        <div class="page-header" style="margin-bottom:0"><h1>Achievements</h1><p>Milestones earned through consistent practice</p></div>
+        <span class="status-pill ${earned ? 'strong' : 'stable'}">${earned}/${achievements.length} earned</span>
+      </div>
+      <div class="achievement-grid">
+        ${achievements.map(item => {
+          const percent = item.target ? Math.min(100, Math.round(Number(item.progress || 0) * 100 / Number(item.target))) : 0;
+          return `<div class="card achievement-card ${item.earned ? 'earned' : 'locked'}">
+            <div class="achievement-icon"><i data-lucide="${item.icon}"></i></div>
+            <h3>${item.title}</h3>
+            <p>${item.description}</p>
+            <div class="achievement-progress"><div class="skill-bar"><div class="skill-fill ${item.earned ? 'strong' : 'stable'}" style="width:${percent}%"></div></div><span>${item.earned ? 'Completed' : `${item.progress}/${item.target}`}</span></div>
+          </div>`;
+        }).join('')}
+      </div>
+    `;
+    refreshIcons();
+  }
+
+  function skillRow(skill) {
+    const cls = statusClass(skill.status);
+    return `
+      <div>
+        <div class="row" style="justify-content:space-between;margin-bottom:7px">
+          <div class="skill-card-title">${skill.name}</div>
+          <span class="status-pill ${cls}">${skill.status}</span>
+        </div>
+        <div class="skill-bar"><div class="skill-fill ${cls}" style="width:${skill.score}%"></div></div>
+        <div class="row" style="justify-content:space-between;margin-top:6px">
+          <div class="s-sub">${skill.recommendation}</div>
+          <div class="s-label">${skill.score}%</div>
+        </div>
+      </div>
+    `;
+  }
+
+  function skillCard(skill) {
+    const cls = statusClass(skill.status);
+    return `
+      <div class="card skill-card" data-status="${cls}" data-score="${skill.score}">
+        <div class="row" style="margin-bottom:12px;justify-content:space-between">
+          <div class="skill-card-title">${skill.name}</div>
+          <span class="status-pill ${cls}">${skill.status}</span>
+        </div>
+        <div class="data-note" style="margin-bottom:12px">${skill.recommendation}</div>
+        <div class="skill-bar" style="margin-bottom:10px"><div class="skill-fill ${cls}" style="width:${skill.score}%"></div></div>
+        <div class="s-label">${skill.score}% retention score</div>
+      </div>
+    `;
+  }
+
+  function renderDashboard(summary) {
+    const skills = summary.skills || [];
+    const decaying = skills.filter(skill => skill.score < 60);
+    const stable = skills.filter(skill => skill.score >= 60 && skill.score < 80);
+    const strong = skills.filter(skill => skill.score >= 80);
+    const now = new Date();
+    const hour = now.getHours();
+    const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+    const firstName = String(summary.user || 'Learner').trim().split(/\s+/)[0];
+    const dateLabel = now.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
+    const palette = [
+      ['JV', '#9b7464', '#f1e6df'], ['DB', '#d4aa5a', '#fbf2df'], ['DS', '#7aab7a', '#edf6eb'],
+      ['FE', '#d4685a', '#fae9e6'], ['ML', '#a18276', '#f3e9e3']
+    ];
+    const alerts = [...skills].filter(skill => skill.score < 80).sort((a, b) => a.score - b.score).slice(0, 3);
+    const practiceMinutes = Number(summary.practiceMinutesThisWeek || 0);
+    const practiceTime = practiceMinutes >= 60
+      ? `${Math.floor(practiceMinutes / 60)}h ${practiceMinutes % 60 ? `${practiceMinutes % 60}m` : ''}`
+      : `${practiceMinutes}m`;
+
+    document.getElementById('dashboard').innerHTML = `
+      <div class="dashboard-header">
+        <div class="dashboard-greeting"><h1>${greeting}, ${firstName}</h1><p>${dateLabel} &middot; ${summary.skillsTracked} skills tracked</p></div>
+      </div>
+      <div class="metric-grid">
+        <div class="metric-card"><div><div class="card-title">Skill Health</div><div class="metric-value">${summary.overallHealth}<span>/100</span></div><div class="metric-sub positive">Overall proficiency score</div></div><div class="metric-icon purple"><i data-lucide="heart-pulse"></i></div></div>
+        <div class="metric-card"><div><div class="card-title">At-Risk Skills</div><div class="metric-value danger">${summary.skillsNeedingAttention}</div><div class="metric-sub">${summary.skillsNeedingAttention ? 'Needs attention' : 'All skills on track'}</div></div><div class="metric-icon red"><i data-lucide="triangle-alert"></i></div></div>
+        <div class="metric-card"><div><div class="card-title">Streak</div><div class="metric-value">${summary.practiceStreakDays}<span> days</span></div><div class="metric-sub positive">Keep the momentum going</div></div><div class="metric-icon green"><i data-lucide="calendar-days"></i></div></div>
+        <div class="metric-card"><div><div class="card-title">Practice Time</div><div class="metric-value">${practiceTime}</div><div class="metric-sub">This week</div></div><div class="metric-icon amber"><i data-lucide="clock-3"></i></div></div>
+      </div>
+      <div class="dashboard-grid">
+        <div class="card">
+          <div class="panel-heading"><div><h2>Skill Breakdown</h2><p>Your progress across key skills</p></div><button class="text-link" onclick="nav('skills',document.querySelector('.nav-item[onclick*=skills]'))">View all skills <i data-lucide="arrow-right"></i></button></div>
+          <div class="skill-dashboard-list">${skills.map((skill, index) => {
+            const color = palette[index % palette.length];
+            const cls = statusClass(skill.status);
+            return `<div class="skill-dashboard-row"><div class="skill-mark" style="color:${color[1]};background:${color[2]}">${color[0]}</div><div class="skill-dashboard-info"><div class="skill-dashboard-meta"><strong>${skill.name}</strong><span>${skill.score}%</span></div><div class="skill-bar"><div class="skill-fill ${cls}" style="width:${skill.score}%;background:${color[1]}"></div></div></div></div>`;
+          }).join('')}</div>
+        </div>
+        <div class="card health-panel">
+          <div class="panel-heading"><div><h2>Health Overview</h2><p>Overall skill health status</p></div></div>
+          <div class="health-layout"><div class="health-ring" style="--score:${summary.overallHealth}"><strong>${summary.overallHealth}</strong><span>Health score</span></div><div class="health-legend"><div><i class="dot strong"></i><span>Strong</span><b>${strong.length}</b></div><div><i class="dot stable"></i><span>Stable</span><b>${stable.length}</b></div><div><i class="dot danger"></i><span>At risk</span><b>${decaying.length}</b></div></div></div>
+          <div class="improve-note"><i data-lucide="trending-up"></i><div><strong>Keep improving</strong><p>Focus on your lowest-scoring skill to lift your overall health.</p></div></div>
+        </div>
+      </div>
+      <div class="card recent-alerts">
+        <div class="panel-heading"><div><h2>Recent Alerts</h2><p>Skills that need your attention</p></div>${alerts.length ? `<button class="text-link" onclick="nav('alerts',document.querySelector('.nav-item[onclick*=alerts]'))">View all alerts <i data-lucide="arrow-right"></i></button>` : ''}</div>
+        <div class="recent-alert-list">${alerts.length ? alerts.map((skill, index) => `<div class="recent-alert-row ${index === 0 ? 'high' : ''}"><div class="alert-symbol"><i data-lucide="${index === 0 ? 'triangle-alert' : 'circle-alert'}"></i></div><div><strong>${skill.name}</strong><p>${skill.recommendation}</p></div><span>${skill.status}</span></div>`).join('') : `<div class="empty-alerts"><i data-lucide="circle-check-big"></i><div><strong>Everything looks healthy</strong><p>No skills currently need urgent attention.</p></div></div>`}</div>
+          </div>
+      </div>
+    `;
+    refreshIcons();
+  }
+
+  let currentSkillFilter = 'all';
+
+  function setSkillFilter(filter) {
+    currentSkillFilter = filter;
+    const cards = Array.from(document.querySelectorAll('#skills .skill-card'));
+    let visible = 0;
+
+    cards.forEach(card => {
+      const status = card.dataset.status;
+      const score = Number(card.dataset.score || 0);
+      const show =
+        filter === 'all' ||
+        (filter === 'strong' && status === 'strong') ||
+        (filter === 'risk' && score < 60);
+
+      card.style.display = show ? '' : 'none';
+      if (show) visible++;
+    });
+
+    const list = document.querySelector('#skills .g2e');
+    let empty = document.getElementById('skills-empty');
+    if (!empty) {
+      empty = document.createElement('div');
+      empty.id = 'skills-empty';
+      empty.className = 'card';
+      empty.style.display = 'none';
+      empty.innerHTML = '<div class="data-note">No skills match this filter yet.</div>';
+      list.after(empty);
+    }
+    empty.style.display = visible === 0 ? 'block' : 'none';
+  }
+
+  function renderSkills(summary) {
+    document.querySelector('#skills .g2e').innerHTML = (summary.skills || []).map(skillCard).join('');
+    setSkillFilter(currentSkillFilter);
+  }
+
+  function renderAlerts(summary) {
+    const alerts = (summary.skills || []).filter(skill => skill.score < 60);
+    const alertHtml = alerts.length ? alerts.map(skill => `
+      <div class="empty-item">
+        <div class="row">
+          <div class="ph circle" style="width:10px;height:10px;flex-shrink:0;background:#d4685a"></div>
+          <div class="skill-card-title">${skill.name} is decaying</div>
+          <span class="status-pill decaying" style="margin-left:auto">${skill.score}%</span>
+        </div>
+        <div class="data-note">${skill.recommendation}</div>
+      </div>
+    `).join('') : '<div class="card"><div class="data-note">No at-risk skills right now. Keep the streak alive.</div></div>';
+
+    document.getElementById('alerts').innerHTML = `
+      <div class="page-header"><h1>Alerts</h1><p>Items needing your attention</p></div>
+      ${alertHtml}
+    `;
+
+    const badge = document.querySelector('.badge');
+    if (badge) badge.textContent = alerts.length;
+  }
+
+  function currentWeekRibbon(todayDayIndex) {
+    const today = new Date();
+    const weekStart = new Date(today);
+    weekStart.setDate(today.getDate() - today.getDay());
+    const labels = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+    const activeIndex = Number.isInteger(todayDayIndex) ? todayDayIndex : today.getDay();
+
+    return labels.map((label, index) => {
+      const day = new Date(weekStart);
+      day.setDate(weekStart.getDate() + index);
+      const title = day.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' });
+      return `<div class="day-pill ${index === activeIndex ? 'active' : ''}" title="${title}">${label}</div>`;
+    }).join('');
+  }
+
+  let practicePlans = [];
+  let practicePlanSummary = null;
+
+  async function renderPlan(summary) {
+    const user = getCurrentUser();
+    let plans = [];
+    let loadError = '';
+    try {
+      const response = await fetch('/api/practice/plans?token=' + encodeURIComponent(user.token));
+      const data = await response.json().catch(() => []);
+      if (!response.ok) throw new Error(data.message || 'Unable to load your learning path.');
+      plans = data;
+    } catch (e) {
+      plans = [];
+      loadError = e.message || 'Unable to load your learning path.';
+    }
+
+    if (!plans.length) {
+      document.getElementById('plan').innerHTML = `
+        <div class="page-header"><h1>Practice Plan</h1><p>Subject-wise locked learning path and module assessments</p></div>
+        <div class="card"><div class="data-note">${loadError || 'No learning modules are available yet.'}</div></div>
+      `;
+      return;
+    }
+
+    practicePlans = plans.slice().sort((a, b) => a.subjectId - b.subjectId);
+    practicePlanSummary = summary;
+    renderPlanSubjects();
+    return;
+
+    const focus = plans.slice().sort((a, b) => a.healthScore - b.healthScore);
+    document.getElementById('plan').innerHTML = `
+      <div class="page-header"><h1>Practice Plan</h1><p>Subject-wise locked learning path and module assessments</p></div>
+      <div class="week-nav">
+        <button class="btn">Today</button>
+        <div class="day-pills">
+          ${currentWeekRibbon(summary.todayDayIndex)}
+        </div>
+        <div class="week-label"><div class="day">Learning Path</div><div class="meta">${focus.length} subject paths ready</div></div>
+      </div>
+      ${focus.map(plan => `
+        <div class="empty-item">
+          <div class="row" style="align-items:flex-start">
+            <span class="status-pill ${statusClass(plan.status)}">${plan.status}</span>
+            <div>
+              <div class="skill-card-title">${plan.subjectName}</div>
+              <div class="data-note">${plan.dailyMinutes} min/day · ${plan.assessmentQuestionCount} assessment questions · ${plan.healthScore}% health</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin-top:14px">
+            ${(plan.steps || []).map(step => `
+              <div style="background:${step.locked ? 'rgba(140,107,92,.06)' : 'rgba(255,255,255,.45)'};border:1px solid var(--card-border);border-radius:12px;padding:12px;opacity:${step.locked ? '.62' : '1'}">
+                <div class="row" style="justify-content:space-between;align-items:flex-start;gap:10px">
+                  <div>
+                    <div class="s-label">${step.activity}</div>
+                    <div class="skill-card-title" style="margin-top:4px">${step.title}</div>
+                  </div>
+                  <span class="status-pill ${step.completed ? 'strong' : step.locked ? 'decaying' : 'stable'}">${step.completed ? 'Completed' : step.locked ? 'Locked' : 'Current'}</span>
+                </div>
+                <div class="data-note" style="margin-top:8px">${step.goal}</div>
+                <div class="s-sub" style="margin-top:8px">${step.questionCount || 15} questions - ${step.score || 0}% score - need 80%</div>
+                <button class="btn" style="margin-top:10px;width:100%" ${step.locked ? 'disabled' : ''} onclick="window.location.href='/assessment.html?subjectId=${plan.subjectId}&topicId=${step.topicId}'">
+                  ${step.completed ? 'Retake Module' : step.locked ? 'Complete Previous Module' : 'Start Module'}
+                </button>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `).join('')}
+    `;
+  }
+
+  function renderPlanSubjects() {
+    const summary = practicePlanSummary || {};
+    document.getElementById('plan').innerHTML = `
+      <div class="analytics-toolbar">
+        <div class="page-header" style="margin-bottom:0"><h1>Practice Plan</h1><p>Select a subject to view its learning modules</p></div>
+        <div class="practice-header-actions">
+          <button class="btn review-mistakes-btn" onclick="window.location.href='/assessment.html?review=mistakes'" ${Number(summary.mistakesToReview || 0) === 0 ? 'disabled' : ''}><i data-lucide="rotate-ccw"></i> Review Mistakes (${Number(summary.mistakesToReview || 0)})</button>
+          <button class="btn personalized-plan-btn" onclick="window.location.href='/personalized-plan.html'"><i data-lucide="sparkles"></i> Make a personalized plan</button>
+        </div>
+      </div>
+      <div class="week-nav">
+        <button class="btn">Today</button>
+        <div class="day-pills">${currentWeekRibbon(summary.todayDayIndex)}</div>
+        <div class="week-label"><div class="day">Learning Paths</div><div class="meta">${practicePlans.length} subjects</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px">
+        ${practicePlans.map(plan => {
+          const steps = plan.steps || [];
+          const completed = steps.filter(step => step.completed).length;
+          const current = steps.find(step => !step.locked && !step.completed);
+          const progress = steps.length ? Math.round((completed / steps.length) * 100) : 0;
+          return `
+            <div class="empty-item" style="margin:0;min-height:190px;justify-content:space-between">
+              <div>
+                <div class="row" style="justify-content:space-between;align-items:flex-start">
+                  <div class="skill-card-title">${plan.subjectName}</div>
+                  <span class="status-pill ${statusClass(plan.status)}">${plan.status}</span>
+                </div>
+                <div class="data-note" style="margin-top:10px">${completed} of ${steps.length} modules completed</div>
+                <div class="skill-bar" style="margin-top:10px"><div class="skill-fill" style="width:${progress}%"></div></div>
+                <div class="s-sub" style="margin-top:8px">${current ? `Next: ${current.title}` : completed === steps.length ? 'Learning path completed' : 'Continue your learning path'}</div>
+              </div>
+              <button class="btn" style="width:100%;margin-top:14px" onclick="openSubjectPlan(${plan.subjectId})">View Modules</button>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+    refreshIcons();
+  }
+
+  function openSubjectPlan(subjectId) {
+    const plan = practicePlans.find(item => Number(item.subjectId) === Number(subjectId));
+    if (!plan) return;
+
+    document.getElementById('plan').innerHTML = `
+      <div class="row" style="justify-content:space-between;align-items:flex-start;margin-bottom:24px;flex-wrap:wrap">
+        <div class="page-header" style="margin-bottom:0">
+          <div style="display:flex;align-items:center;gap:10px">
+            <button class="plan-back" type="button" onclick="renderPlanSubjects()" title="Back to subjects" aria-label="Back to subjects"><i data-lucide="arrow-left"></i></button>
+            <h1>${plan.subjectName}</h1>
+          </div>
+          <p>${(plan.steps || []).filter(step => step.completed).length} of ${(plan.steps || []).length} modules completed · Score 80% to unlock the next module</p>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        ${(plan.steps || []).map(step => `
+          <div class="empty-item" style="margin:0;opacity:${step.locked ? '.65' : '1'};background:${step.locked ? 'rgba(140,107,92,.05)' : 'rgba(255,255,255,.42)'}">
+            <div class="row" style="justify-content:space-between;align-items:center;gap:18px;flex-wrap:wrap">
+              <div style="flex:1;min-width:240px">
+                <div class="row" style="margin-bottom:6px">
+                  <span class="status-pill ${step.completed ? 'strong' : step.locked ? 'decaying' : 'stable'}">${step.completed ? 'Completed' : step.locked ? 'Locked' : 'Current'}</span>
+                  <span class="s-sub">Module ${step.moduleOrder}</span>
+                </div>
+                <div class="skill-card-title">${step.title.replace(/^Module \d+:\s*/, '')}</div>
+                <div class="data-note" style="margin-top:5px">${step.questionCount || 15} questions · ${step.score || 0}% score · 80% required</div>
+              </div>
+              <button class="btn" style="min-width:170px" ${step.locked ? 'disabled' : ''} onclick="window.location.href='/assessment.html?subjectId=${plan.subjectId}&topicId=${step.topicId}'">
+                ${step.completed ? 'Retake Module' : step.locked ? 'Locked' : 'Start Module'}
+              </button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+    refreshIcons();
+  }
+
+  let analyticsChartInstances = [];
+  let analyticsHistory = [];
+  let analyticsSummary = null;
+  let analyticsCurrentRange = '30';
+
+  function parseAnalyticsDate(value) {
+    const parts = String(value || '').split(' ');
+    const months = { Jan:0, Feb:1, Mar:2, Apr:3, May:4, Jun:5, Jul:6, Aug:7, Sep:8, Oct:9, Nov:10, Dec:11 };
+    return parts.length === 3 ? new Date(Number(parts[2]), months[parts[1]], Number(parts[0])) : new Date(value);
+  }
+
+  function analyticsDaysForRange(range) {
+    if (range === 'all') return analyticsHistory.slice();
+    const cutoff = new Date();
+    cutoff.setHours(0, 0, 0, 0);
+    cutoff.setDate(cutoff.getDate() - Number(range) + 1);
+    return analyticsHistory.filter(day => parseAnalyticsDate(day.date) >= cutoff);
+  }
+
+  function analyticsModules(days) {
+    return days.reduce((all, day) => all.concat((day.modules || []).map(module => ({ ...module, date:day.date }))), []);
+  }
+
+  function updateAnalyticsDetail(title, description, icon) {
+    const detail = document.getElementById('analytics-detail');
+    if (!detail) return;
+    detail.classList.remove('expanded');
+    detail.innerHTML = `<div class="analytics-detail-icon"><i data-lucide="${icon || 'chart-no-axes-combined'}"></i></div><div><h3>${title}</h3><p>${description}</p></div>`;
+    refreshIcons();
+  }
+
+  function showSubjectAnalytics(skill) {
+    const detail = document.getElementById('analytics-detail');
+    if (!detail) return;
+    const subjectModules = analyticsModules(analyticsDaysForRange(analyticsCurrentRange)).filter(item => item.subject === skill.name);
+    const answered = subjectModules.reduce((sum, item) => sum + Number(item.answeredCount || 0), 0);
+    const seconds = subjectModules.reduce((sum, item) => sum + Number(item.timeTakenSeconds || 0), 0);
+    const averageTime = answered ? Math.round(seconds / answered) : 0;
+    const passed = subjectModules.filter(item => item.passed).length;
+    const topicGroups = {};
+    subjectModules.forEach(item => {
+      if (!topicGroups[item.topic]) topicGroups[item.topic] = [];
+      topicGroups[item.topic].push(Number(item.score || 0));
+    });
+    const moduleRows = Object.keys(topicGroups).map(topic => {
+      const scores = topicGroups[topic];
+      return { topic, attempts:scores.length, average:Math.round(scores.reduce((a,b)=>a+b,0)/scores.length), latest:scores[0] };
+    });
+    const plan = practicePlans.find(item => item.subjectName === skill.name);
+    detail.classList.add('expanded');
+    detail.innerHTML = `
+      <div style="width:100%">
+        <div class="row" style="justify-content:space-between;align-items:center"><div><h3>${skill.name}</h3><p>Detailed performance for the selected period</p></div>${plan ? `<button class="btn" onclick="openAnalyticsPracticePlan(${plan.subjectId})">Open Learning Path</button>` : ''}</div>
+        <div class="drill-metrics"><div class="drill-metric"><strong>${skill.score}%</strong><span>Current health</span></div><div class="drill-metric"><strong>${subjectModules.length}</strong><span>Module attempts</span></div><div class="drill-metric"><strong>${passed}</strong><span>Passed attempts</span></div><div class="drill-metric"><strong>${averageTime}s</strong><span>Average per answer</span></div></div>
+        <div class="module-insight-list">${moduleRows.length ? moduleRows.map(item => `<span class="module-insight"><b>${item.topic}</b> · ${item.average}% avg · ${item.attempts} attempt${item.attempts === 1 ? '' : 's'}</span>`).join('') : '<span class="data-note">No module attempts in this period yet.</span>'}</div>
+      </div>`;
+    detail.scrollIntoView({ behavior:'smooth', block:'center' });
+  }
+
+  function openAnalyticsPracticePlan(subjectId) {
+    const planNav = document.querySelector(".nav-item[onclick*=\"'plan'\"]");
+    nav('plan', planNav);
+    openSubjectPlan(subjectId);
+  }
+
+  function renderAnalyticsHeatmap(days) {
+    const container = document.getElementById('analytics-heatmap');
+    if (!container) return;
+    const activity = {};
+    days.forEach(day => {
+      const key = parseAnalyticsDate(day.date).toISOString().slice(0, 10);
+      activity[key] = { count:Number(day.moduleCount || 0), score:Number(day.averageScore || 0), label:day.date };
+    });
+    const cells = [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    for (let offset = 34; offset >= 0; offset--) {
+      const date = new Date(today);
+      date.setDate(today.getDate() - offset);
+      const key = date.toISOString().slice(0, 10);
+      const item = activity[key] || { count:0, score:0, label:date.toLocaleDateString('en-IN', { day:'numeric', month:'short' }) };
+      const level = item.count === 0 ? 0 : item.score >= 80 ? 4 : item.score >= 65 ? 3 : item.score >= 45 ? 2 : 1;
+      cells.push(`<button class="heat-cell level-${level}" title="${item.label}: ${item.count} assessment${item.count === 1 ? '' : 's'}, ${item.score}% average" onclick="updateAnalyticsDetail('${item.label}', '${item.count ? `${item.count} module assessment${item.count === 1 ? '' : 's'} with ${item.score}% average score.` : 'No assessment activity recorded.'}', 'calendar-days')"></button>`);
+    }
+    container.innerHTML = `<div class="heatmap-labels"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div><div class="activity-heatmap">${cells.join('')}</div><div class="heat-legend"><span>Less</span><i style="background:#f3ede8"></i><i style="background:#f3b3a7"></i><i style="background:#f2cd76"></i><i style="background:#a9cf91"></i><i style="background:#5f9f78"></i><span>More</span></div>`;
+  }
+
+  function drawAnalyticsCharts(range) {
+    analyticsCurrentRange = range;
+    const days = analyticsDaysForRange(range);
+    const modules = analyticsModules(days);
+    analyticsChartInstances.forEach(chart => chart.destroy());
+    analyticsChartInstances = [];
+    renderAnalyticsHeatmap(days);
+
+    const attempts = modules.length;
+    const average = attempts ? Math.round(modules.reduce((sum, item) => sum + Number(item.score || 0), 0) / attempts) : Number(analyticsSummary.overallHealth || 0);
+    const statAverage = document.getElementById('analytics-average');
+    const statAttempts = document.getElementById('analytics-attempts');
+    if (statAverage) statAverage.textContent = average + '%';
+    if (statAttempts) statAttempts.textContent = attempts;
+
+    if (!window.Chart) {
+      document.querySelectorAll('.chart-shell').forEach(shell => shell.innerHTML = '<div class="chart-empty">Charts could not load. Check the internet connection and refresh this page.</div>');
+      return;
+    }
+
+    const common = {
+      responsive:true,
+      maintainAspectRatio:false,
+      plugins:{ legend:{ display:false }, tooltip:{ backgroundColor:'#3a2a22', padding:10, cornerRadius:7, titleFont:{size:11}, bodyFont:{size:11} } },
+      scales:{ x:{ grid:{display:false}, ticks:{color:'#8a7167',font:{size:10}} }, y:{beginAtZero:true,max:100,grid:{color:'rgba(155,116,100,.10)'},ticks:{color:'#8a7167',font:{size:10},callback:value => value + '%'}} }
+    };
+
+    const trendDays = days.slice().sort((a, b) => parseAnalyticsDate(a.date) - parseAnalyticsDate(b.date));
+    const trendLabels = trendDays.length ? trendDays.map(day => day.date.replace(/ \d{4}$/, '')) : ['Current'];
+    const trendValues = trendDays.length ? trendDays.map(day => Number(day.averageScore || 0)) : [Number(analyticsSummary.overallHealth || 0)];
+    const trendCanvas = document.getElementById('health-trend-chart');
+    if (trendCanvas) analyticsChartInstances.push(new Chart(trendCanvas, {
+      type:'line',
+      data:{ labels:trendLabels, datasets:[{ data:trendValues, borderColor:'#9b7464', backgroundColor:'rgba(155,116,100,.14)', fill:true, tension:.35, pointRadius:4, pointHoverRadius:6, pointBackgroundColor:'#fff', pointBorderWidth:2 }] },
+      options:{ ...common, onClick:(event, elements) => { if (!elements.length) return; const day=trendDays[elements[0].index]; if (day) updateAnalyticsDetail(day.date, `${day.moduleCount} module assessment${day.moduleCount === 1 ? '' : 's'} with ${day.averageScore}% average score.`, 'trending-up'); } }
+    }));
+
+    const skills = analyticsSummary.skills || [];
+    const subjectCanvas = document.getElementById('subject-chart');
+    if (subjectCanvas) analyticsChartInstances.push(new Chart(subjectCanvas, {
+      type:'bar',
+      data:{ labels:skills.map(skill => skill.name.replace('Data Structures & Algorithms','DSA').replace('Machine Learning Basics','Machine Learning')), datasets:[{ data:skills.map(skill => skill.score), backgroundColor:['#9b7464','#d4aa5a','#7aab7a','#d4685a','#a18276'], borderRadius:5, maxBarThickness:32 }] },
+      options:{ ...common, indexAxis:'y', scales:{ x:{beginAtZero:true,max:100,grid:{color:'rgba(155,116,100,.10)'},ticks:{color:'#8a7167',font:{size:10},callback:value=>value+'%'}}, y:{grid:{display:false},ticks:{color:'#5f4a42',font:{size:10}}} }, onHover:(event,elements)=>{event.native.target.style.cursor=elements.length?'pointer':'default';}, onClick:(event, elements) => { if (!elements.length) return; showSubjectAnalytics(skills[elements[0].index]); } }
+    }));
+
+    const topicGroups = {};
+    modules.forEach(item => {
+      const key = item.subject + ' · ' + item.topic;
+      if (!topicGroups[key]) topicGroups[key] = [];
+      topicGroups[key].push(Number(item.score || 0));
+    });
+    let weakTopics = Object.keys(topicGroups).map(name => ({ name, score:Math.round(topicGroups[name].reduce((a,b)=>a+b,0)/topicGroups[name].length), attempts:topicGroups[name].length })).sort((a,b)=>a.score-b.score).slice(0,6);
+    if (!weakTopics.length) weakTopics = skills.slice().sort((a,b)=>a.score-b.score).slice(0,5).map(skill => ({name:skill.name,score:skill.score,attempts:0}));
+    const weakCanvas = document.getElementById('weak-topic-chart');
+    if (weakCanvas) analyticsChartInstances.push(new Chart(weakCanvas, {
+      type:'bar',
+      data:{ labels:weakTopics.map(item => item.name.length > 34 ? item.name.slice(0,31)+'...' : item.name), datasets:[{ data:weakTopics.map(item => item.score), backgroundColor:weakTopics.map(item => item.score < 60 ? '#d4685a' : item.score < 80 ? '#d4aa5a' : '#7aab7a'), borderRadius:5, maxBarThickness:25 }] },
+      options:{ ...common, indexAxis:'y', scales:{ x:{beginAtZero:true,max:100,grid:{color:'rgba(155,116,100,.10)'},ticks:{color:'#8a7167',font:{size:10},callback:value=>value+'%'}}, y:{grid:{display:false},ticks:{color:'#5f4a42',font:{size:10}}} }, onHover:(event,elements)=>{event.native.target.style.cursor=elements.length?'pointer':'default';}, onClick:(event, elements) => { if (!elements.length) return; const item=weakTopics[elements[0].index]; updateAnalyticsDetail(item.name, `${item.score}% average score${item.attempts ? ` from ${item.attempts} assessment${item.attempts === 1 ? '' : 's'}` : ''}. Review this module in your Practice Plan.`, 'target'); document.getElementById('analytics-detail').scrollIntoView({behavior:'smooth',block:'center'}); } }
+    }));
+  }
+
+  function setAnalyticsRange(range, button) {
+    document.querySelectorAll('.range-btn').forEach(item => item.classList.remove('active'));
+    if (button) button.classList.add('active');
+    drawAnalyticsCharts(range);
+  }
+
+  async function renderAnalytics(summary) {
+    analyticsSummary = summary;
+    const user = getCurrentUser();
+    try {
+      const response = await fetch('/api/dashboard/history?token=' + encodeURIComponent(user.token));
+      analyticsHistory = response.ok ? await response.json() : [];
+    } catch (error) {
+      analyticsHistory = [];
+    }
+    const skills = summary.skills || [];
+    const strongest = skills.slice().sort((a,b) => b.score-a.score)[0];
+    const weakest = skills.slice().sort((a,b) => a.score-b.score)[0];
+    document.getElementById('analytics').innerHTML = `
+      <div class="analytics-toolbar">
+        <div class="page-header" style="margin-bottom:0"><h1>Analytics</h1><p>Explore progress, consistency, and modules that need attention</p></div>
+        <div class="range-control" aria-label="Analytics date range"><button class="range-btn" onclick="setAnalyticsRange('7',this)">7 days</button><button class="range-btn active" onclick="setAnalyticsRange('30',this)">30 days</button><button class="range-btn" onclick="setAnalyticsRange('90',this)">90 days</button><button class="range-btn" onclick="setAnalyticsRange('all',this)">All</button></div>
+      </div>
+      <div class="analytics-metrics">
+        <div class="card analytics-stat"><div class="card-title">Average Score</div><strong id="analytics-average">${summary.overallHealth}%</strong><span>Selected period</span></div>
+        <div class="card analytics-stat"><div class="card-title">Assessments</div><strong id="analytics-attempts">0</strong><span>Module attempts</span></div>
+        <div class="card analytics-stat"><div class="card-title">Strongest Skill</div><strong style="font-size:15px">${strongest ? strongest.name : 'Not available'}</strong><span>${strongest ? strongest.score + '% health' : 'Complete an assessment'}</span></div>
+        <div class="card analytics-stat"><div class="card-title">Focus Area</div><strong style="font-size:15px">${weakest ? weakest.name : 'Not available'}</strong><span>${weakest ? weakest.score + '% health' : 'Complete an assessment'}</span></div>
+      </div>
+      <div class="analytics-grid">
+        <div class="card"><div class="panel-heading"><div><h2>Skill Health Trend</h2><p>Average assessment score over time</p></div></div><div class="chart-shell"><canvas id="health-trend-chart"></canvas></div></div>
+        <div class="card"><div class="panel-heading"><div><h2>Subject Performance</h2><p>Click a bar for details</p></div></div><div class="chart-shell"><canvas id="subject-chart"></canvas></div></div>
+      </div>
+      <div class="analytics-grid equal">
+        <div class="card"><div class="panel-heading"><div><h2>Modules Needing Attention</h2><p>Lowest average scores in the selected period</p></div></div><div class="chart-shell short"><canvas id="weak-topic-chart"></canvas></div></div>
+        <div class="card"><div class="panel-heading"><div><h2>Practice Activity</h2><p>Last five weeks of module assessments</p></div></div><div class="heatmap-wrap" id="analytics-heatmap"></div></div>
+      </div>
+      <div class="card analytics-detail" id="analytics-detail"><div class="analytics-detail-icon"><i data-lucide="mouse-pointer-click"></i></div><div><h3>Explore your analytics</h3><p>Click a chart point, subject, module, or activity cell to see focused insights here.</p></div></div>
+    `;
+    refreshIcons();
+    drawAnalyticsCharts('30');
+  }
+
+  function historyDayMarkup(day) {
+    return `
+      <div class="card" style="margin-bottom:16px">
+        <div class="row" style="align-items:flex-start;margin-bottom:14px">
+          <div>
+            <div class="card-title" style="margin-bottom:4px">${day.date}</div>
+            <div class="data-note">${day.moduleCount} module assessment${day.moduleCount === 1 ? '' : 's'} - ${day.averageScore}% average score</div>
+          </div>
+          <span class="status-pill ${day.averageScore >= 80 ? 'strong' : day.averageScore >= 60 ? 'stable' : 'decaying'}" style="margin-left:auto">${day.averageScore}%</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          ${(day.modules || []).map(attempt => `
+            <div class="empty-item" style="margin:0">
+              <div class="row" style="align-items:center;gap:16px;flex-wrap:wrap">
+                <span class="status-pill ${attempt.passed ? 'strong' : 'decaying'}">${attempt.passed ? 'Passed' : 'Retry'}</span>
+                <div style="flex:1;min-width:240px">
+                  <div class="skill-card-title">${attempt.subject}</div>
+                  <div class="data-note" style="margin-top:4px">${attempt.topic}</div>
+                  <div class="s-sub" style="margin-top:6px">${attempt.correctCount}/${attempt.questionCount} correct - ${attempt.answeredCount} answered</div>
+                </div>
+                <div style="text-align:right;min-width:110px">
+                  <div class="skill-card-title">${attempt.score}%</div>
+                  <div class="s-sub">${attempt.time} - ${attempt.timeTakenSeconds}s</div>
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  async function renderHistory() {
+    const user = getCurrentUser();
+    const section = document.getElementById('history');
+    if (!user || !user.token || !section) return;
+
+    try {
+      const response = await fetch('/api/dashboard/history?token=' + encodeURIComponent(user.token));
+      const days = await response.json().catch(() => []);
+      if (!response.ok) throw new Error(days.message || 'Unable to load history.');
+
+      let body = days.length ? days.map(day => `
+        <div class="card" style="margin-bottom:16px">
+          <div class="row" style="align-items:flex-start;margin-bottom:14px">
+            <div>
+              <div class="card-title" style="margin-bottom:4px">${day.date}</div>
+              <div class="data-note">${day.attemptCount} attempts Â· ${day.correctCount} correct Â· ${day.accuracy}% accuracy</div>
+            </div>
+            <span class="status-pill ${day.accuracy >= 75 ? 'strong' : day.accuracy >= 60 ? 'stable' : 'decaying'}" style="margin-left:auto">${day.accuracy}%</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            ${(day.attempts || []).map(attempt => `
+              <div class="empty-item" style="margin:0">
+                <div class="row" style="align-items:flex-start">
+                  <span class="status-pill ${attempt.correct ? 'strong' : 'decaying'}">${attempt.correct ? 'Correct' : 'Wrong'}</span>
+                  <div style="flex:1">
+                    <div class="skill-card-title">${attempt.subject} Â· ${attempt.topic}</div>
+                    <div class="data-note" style="margin-top:4px">${attempt.question}</div>
+                    <div class="data-note" style="margin-top:6px">Selected: ${attempt.selectedOption}</div>
+                  </div>
+                  <div class="data-note" style="text-align:right">${attempt.time}<br>${attempt.difficulty} Â· ${attempt.timeTakenSeconds}s</div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `).join('') : '<div class="card"><div class="data-note">No attempts yet. Start an assessment to build your history.</div></div>';
+
+      body = days.length
+        ? days.map(historyDayMarkup).join('')
+        : '<div class="card"><div class="data-note">No module assessments yet. Start a module to build your history.</div></div>';
+
+      section.innerHTML = `
+        <div class="page-header"><h1>History</h1><p>Your past assessment attempts by date</p></div>
+        ${body}
+      `;
+    } catch (err) {
+      section.innerHTML = `
+        <div class="page-header"><h1>History</h1><p>Your past assessment attempts by date</p></div>
+        <div class="card"><div class="data-note">${err.message || 'Unable to load history.'}</div></div>
+      `;
+    }
+  }
+
+  async function loadDashboardData() {
+    const user = await getFreshCurrentUser();
+    if (!user || !user.token) return;
+    buildSidebar();
+
+    try {
+      const response = await fetch('/api/dashboard/summary?token=' + encodeURIComponent(user.token));
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.message || 'Unable to load dashboard data.');
+
+      renderProfile(data, user);
+      renderDashboard(data);
+      renderSkills(data);
+      renderAlerts(data);
+      await renderPlan(data);
+      renderAchievements(data);
+      await renderAnalytics(data);
+      await renderHistory();
+      if (window.location.hash === '#settings' || profileUpdateFlash) {
+        const settingsNav = document.querySelector(".nav-item[onclick*=\"settings\"]");
+        nav('settings', settingsNav || document.querySelector('.nav-item'));
+      } else if (window.location.hash === '#plan') {
+        const planNav = document.querySelector(".nav-item[onclick*=\"plan\"]");
+        nav('plan', planNav || document.querySelector('.nav-item'));
+      }
+    } catch (err) {
+      document.getElementById('dashboard').innerHTML = `
+        <div class="page-header"><h1>Dashboard</h1><p>Your skill health at a glance</p></div>
+        <div class="card"><div class="data-note">${err.message || 'Unable to load dashboard data.'}</div></div>
+      `;
+    }
+  }
+
+  loadDashboardData();
+</script>
+</body>
+</html>

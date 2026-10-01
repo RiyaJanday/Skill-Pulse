@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkillPulse - Edit Profile</title>
+  <link rel="icon" type="image/png" href="/assets/SkillPulse%20logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --cream:#f5ede4; --warm-white:#faf6f2; --card-bg:rgba(255,255,255,.74);
+      --card-border:rgba(180,130,110,.16); --sidebar-act:#8c6b5c;
+      --text-dark:#3a2a22; --text-mid:#7a5c52; --text-light:#b09080;
+      --green:#7aab7a; --danger:#d4685a; --gold:#d4aa5a;
+    }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body {
+      font-family:'DM Sans',sans-serif; min-height:100vh; background:var(--cream);
+      color:var(--text-dark); display:flex; align-items:center; justify-content:center; padding:28px;
+    }
+    body::before {
+      content:''; position:fixed; inset:0; pointer-events:none;
+      background:
+        radial-gradient(ellipse 520px 360px at 84% 16%, rgba(210,160,130,.13), transparent 70%),
+        radial-gradient(ellipse 360px 460px at 8% 76%, rgba(180,120,100,.09), transparent 70%);
+    }
+    .card {
+      position:relative; z-index:1; width:min(780px,100%); background:var(--card-bg);
+      border:1px solid var(--card-border); border-radius:22px; padding:32px;
+      box-shadow:0 18px 60px rgba(140,100,80,.12); backdrop-filter:blur(10px);
+    }
+    h1 { font-family:'Fraunces',serif; font-size:34px; font-weight:500; margin-bottom:6px; }
+    .sub { color:var(--text-light); margin-bottom:26px; }
+    .grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+    .field { display:flex; flex-direction:column; gap:7px; }
+    label { font-size:13px; font-weight:700; color:var(--text-dark); }
+    input, select {
+      width:100%; border:1.5px solid var(--card-border); border-radius:13px;
+      background:rgba(255,255,255,.56); color:var(--text-dark); padding:13px 14px;
+      font:inherit; outline:none;
+    }
+    input:focus, select:focus { border-color:var(--sidebar-act); }
+    select {
+      appearance:none;
+      cursor:pointer;
+      padding-right:38px;
+    }
+    .select-wrap { position:relative; }
+    .select-wrap::after {
+      content:'';
+      position:absolute;
+      right:15px;
+      top:50%;
+      width:8px;
+      height:8px;
+      border-right:2px solid var(--text-mid);
+      border-bottom:2px solid var(--text-mid);
+      transform:translateY(-65%) rotate(45deg);
+      pointer-events:none;
+    }
+    .phone-row { display:grid; grid-template-columns:150px 1fr; gap:12px; }
+    .photo-row { display:flex; align-items:center; gap:18px; margin-bottom:22px; }
+    .avatar {
+      width:76px; height:76px; border-radius:18px; background:linear-gradient(135deg,#e8c97a,#d4aa5a);
+      display:flex; align-items:center; justify-content:center; font-family:'Fraunces',serif;
+      color:#7a5010; font-weight:700; overflow:hidden; flex-shrink:0;
+    }
+    .avatar img { width:100%; height:100%; object-fit:cover; }
+    .file-picker {
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-height:60px;
+      border:1.5px solid var(--card-border);
+      border-radius:13px;
+      background:rgba(255,255,255,.56);
+      padding:9px 10px;
+      margin-top:7px;
+      width:min(548px,100%);
+    }
+    .file-input {
+      position:absolute;
+      width:1px;
+      height:1px;
+      opacity:0;
+      pointer-events:none;
+    }
+    .file-button {
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:38px;
+      padding:10px 16px;
+      border-radius:11px;
+      background:var(--sidebar-act);
+      color:#fff;
+      font-weight:800;
+      cursor:pointer;
+      white-space:nowrap;
+      box-shadow:0 8px 18px rgba(140,107,92,.18);
+    }
+    .remove-photo {
+      border:0;
+      background:transparent;
+      color:var(--danger);
+      font:inherit;
+      font-size:13px;
+      font-weight:800;
+      cursor:pointer;
+      padding:8px 6px;
+      white-space:nowrap;
+    }
+    .remove-photo:hover,
+    .remove-photo:focus {
+      color:#b84d40;
+      outline:none;
+      text-decoration:underline;
+    }
+    .file-name {
+      color:var(--text-mid);
+      font-size:14px;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+    .hint { color:var(--text-light); font-size:13px; line-height:1.45; }
+    .actions { display:flex; justify-content:space-between; gap:12px; margin-top:24px; }
+    .btn {
+      border:1.5px solid var(--card-border); border-radius:12px; padding:12px 18px;
+      font-weight:800; cursor:pointer; background:var(--warm-white); color:var(--text-dark); font:inherit;
+    }
+    .btn-primary { background:var(--sidebar-act); color:white; border-color:transparent; }
+    .message { display:none; margin-top:16px; padding:12px 14px; border-radius:12px; color:#b84d40; background:rgba(212,104,90,.12); }
+    .message.show { display:block; }
+    @media (max-width:680px) { .grid, .phone-row { grid-template-columns:1fr; } .actions { flex-direction:column-reverse; } }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>Edit Profile</h1>
+    <p class="sub">Update your account information and profile photo.</p>
+
+    <div class="photo-row">
+      <div class="avatar" id="avatar-preview">SP</div>
+      <div>
+        <label for="profile-photo">Profile Photo</label>
+        <div class="file-picker">
+          <input type="file" id="profile-photo" class="file-input" accept="image/*">
+          <label class="file-button" for="profile-photo">Choose Photo</label>
+          <span class="file-name" id="file-name">No file selected</span>
+          <button type="button" class="remove-photo" id="remove-photo">Remove Photo</button>
+        </div>
+        <div class="hint">Use a small JPG or PNG image. It will be saved with your local profile.</div>
+      </div>
+    </div>
+
+    <form id="profile-form" novalidate>
+      <div class="grid">
+        <div class="field">
+          <label for="first-name">First Name</label>
+          <input id="first-name" autocomplete="given-name" required>
+        </div>
+        <div class="field">
+          <label for="last-name">Last Name</label>
+          <input id="last-name" autocomplete="family-name" required>
+        </div>
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" type="email" autocomplete="email" required>
+        </div>
+        <div class="field">
+          <label>Phone Number</label>
+          <div class="phone-row">
+            <div class="select-wrap">
+              <select id="phone-country" aria-label="Country code"></select>
+            </div>
+            <input id="phone-number" inputmode="tel" autocomplete="tel" placeholder="Enter phone number">
+          </div>
+        </div>
+      </div>
+
+      <div class="message" id="message"></div>
+
+      <div class="actions">
+        <button type="button" class="btn" onclick="window.location.href='/dashboard.html?profileUpdated=0#settings'">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="update-btn">Update Profile</button>
+      </div>
+    </form>
+  </main>
+
+  <script>
+    const $ = id => document.getElementById(id);
+    let profilePhoto = '';
+    const countryCodes = [
+      ['Afghanistan','+93'], ['Albania','+355'], ['Algeria','+213'], ['Andorra','+376'], ['Angola','+244'],
+      ['Antigua and Barbuda','+1-268'], ['Argentina','+54'], ['Armenia','+374'], ['Australia','+61'], ['Austria','+43'],
+      ['Azerbaijan','+994'], ['Bahamas','+1-242'], ['Bahrain','+973'], ['Bangladesh','+880'], ['Barbados','+1-246'],
+      ['Belarus','+375'], ['Belgium','+32'], ['Belize','+501'], ['Benin','+229'], ['Bhutan','+975'],
+      ['Bolivia','+591'], ['Bosnia and Herzegovina','+387'], ['Botswana','+267'], ['Brazil','+55'], ['Brunei','+673'],
+      ['Bulgaria','+359'], ['Burkina Faso','+226'], ['Burundi','+257'], ['Cambodia','+855'], ['Cameroon','+237'],
+      ['Canada','+1'], ['Cape Verde','+238'], ['Central African Republic','+236'], ['Chad','+235'], ['Chile','+56'],
+      ['China','+86'], ['Colombia','+57'], ['Comoros','+269'], ['Congo','+242'], ['Costa Rica','+506'],
+      ['Croatia','+385'], ['Cuba','+53'], ['Cyprus','+357'], ['Czech Republic','+420'], ['Denmark','+45'],
+      ['Djibouti','+253'], ['Dominica','+1-767'], ['Dominican Republic','+1-809'], ['Ecuador','+593'], ['Egypt','+20'],
+      ['El Salvador','+503'], ['Equatorial Guinea','+240'], ['Eritrea','+291'], ['Estonia','+372'], ['Eswatini','+268'],
+      ['Ethiopia','+251'], ['Fiji','+679'], ['Finland','+358'], ['France','+33'], ['Gabon','+241'],
+      ['Gambia','+220'], ['Georgia','+995'], ['Germany','+49'], ['Ghana','+233'], ['Greece','+30'],
+      ['Grenada','+1-473'], ['Guatemala','+502'], ['Guinea','+224'], ['Guinea-Bissau','+245'], ['Guyana','+592'],
+      ['Haiti','+509'], ['Honduras','+504'], ['Hungary','+36'], ['Iceland','+354'], ['India','+91'],
+      ['Indonesia','+62'], ['Iran','+98'], ['Iraq','+964'], ['Ireland','+353'], ['Israel','+972'],
+      ['Italy','+39'], ['Jamaica','+1-876'], ['Japan','+81'], ['Jordan','+962'], ['Kazakhstan','+7'],
+      ['Kenya','+254'], ['Kiribati','+686'], ['Kuwait','+965'], ['Kyrgyzstan','+996'], ['Laos','+856'],
+      ['Latvia','+371'], ['Lebanon','+961'], ['Lesotho','+266'], ['Liberia','+231'], ['Libya','+218'],
+      ['Liechtenstein','+423'], ['Lithuania','+370'], ['Luxembourg','+352'], ['Madagascar','+261'], ['Malawi','+265'],
+      ['Malaysia','+60'], ['Maldives','+960'], ['Mali','+223'], ['Malta','+356'], ['Marshall Islands','+692'],
+      ['Mauritania','+222'], ['Mauritius','+230'], ['Mexico','+52'], ['Micronesia','+691'], ['Moldova','+373'],
+      ['Monaco','+377'], ['Mongolia','+976'], ['Montenegro','+382'], ['Morocco','+212'], ['Mozambique','+258'],
+      ['Myanmar','+95'], ['Namibia','+264'], ['Nauru','+674'], ['Nepal','+977'], ['Netherlands','+31'],
+      ['New Zealand','+64'], ['Nicaragua','+505'], ['Niger','+227'], ['Nigeria','+234'], ['North Korea','+850'],
+      ['North Macedonia','+389'], ['Norway','+47'], ['Oman','+968'], ['Pakistan','+92'], ['Palau','+680'],
+      ['Panama','+507'], ['Papua New Guinea','+675'], ['Paraguay','+595'], ['Peru','+51'], ['Philippines','+63'],
+      ['Poland','+48'], ['Portugal','+351'], ['Qatar','+974'], ['Romania','+40'], ['Russia','+7'],
+      ['Rwanda','+250'], ['Saint Kitts and Nevis','+1-869'], ['Saint Lucia','+1-758'], ['Saint Vincent and the Grenadines','+1-784'], ['Samoa','+685'],
+      ['San Marino','+378'], ['Sao Tome and Principe','+239'], ['Saudi Arabia','+966'], ['Senegal','+221'], ['Serbia','+381'],
+      ['Seychelles','+248'], ['Sierra Leone','+232'], ['Singapore','+65'], ['Slovakia','+421'], ['Slovenia','+386'],
+      ['Solomon Islands','+677'], ['Somalia','+252'], ['South Africa','+27'], ['South Korea','+82'], ['South Sudan','+211'],
+      ['Spain','+34'], ['Sri Lanka','+94'], ['Sudan','+249'], ['Suriname','+597'], ['Sweden','+46'],
+      ['Switzerland','+41'], ['Syria','+963'], ['Taiwan','+886'], ['Tajikistan','+992'], ['Tanzania','+255'],
+      ['Thailand','+66'], ['Timor-Leste','+670'], ['Togo','+228'], ['Tonga','+676'], ['Trinidad and Tobago','+1-868'],
+      ['Tunisia','+216'], ['Turkey','+90'], ['Turkmenistan','+993'], ['Tuvalu','+688'], ['Uganda','+256'],
+      ['Ukraine','+380'], ['United Arab Emirates','+971'], ['United Kingdom','+44'], ['United States','+1'], ['Uruguay','+598'],
+      ['Uzbekistan','+998'], ['Vanuatu','+678'], ['Vatican City','+379'], ['Venezuela','+58'], ['Vietnam','+84'],
+      ['Yemen','+967'], ['Zambia','+260'], ['Zimbabwe','+263']
+    ];
+
+    function populateCountryCodes(selectedCode) {
+      const select = $('phone-country');
+      select.innerHTML = countryCodes.map(([country, code]) =>
+        `<option value="${code}" ${code === selectedCode ? 'selected' : ''}>${country} (${code})</option>`
+      ).join('');
+    }
+
+    function currentUser() {
+      try { return JSON.parse(sessionStorage.getItem('sp_current_user') || 'null'); }
+      catch (e) { return null; }
+    }
+
+    function setMessage(text) {
+      $('message').textContent = text || '';
+      $('message').classList.toggle('show', Boolean(text));
+    }
+
+    function initials(first, last, name) {
+      const source = [first, last].filter(Boolean).join(' ') || name || 'SkillPulse User';
+      return source.split(/\s+/).filter(Boolean).slice(0, 2).map(p => p[0].toUpperCase()).join('');
+    }
+
+    function currentInitials() {
+      return initials($('first-name').value.trim(), $('last-name').value.trim(), '');
+    }
+
+    function renderAvatar(user) {
+      const preview = $('avatar-preview');
+      if (profilePhoto) {
+        preview.innerHTML = `<img src="${profilePhoto}" alt="Profile photo">`;
+      } else {
+        preview.textContent = currentInitials() || initials(user.firstName, user.lastName, user.name);
+      }
+    }
+
+    async function loadProfile() {
+      const user = currentUser();
+      if (!user || !user.token) {
+        window.location.href = '/login.html';
+        return;
+      }
+
+      const response = await fetch('/api/auth/me?token=' + encodeURIComponent(user.token));
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        window.location.href = '/login.html';
+        return;
+      }
+
+      const parts = (data.name || '').split(/\s+/);
+      $('first-name').value = data.firstName || parts[0] || '';
+      $('last-name').value = data.lastName || parts.slice(1).join(' ') || '';
+      $('email').value = data.email || '';
+      populateCountryCodes(data.phoneCountryCode || '+91');
+      $('phone-number').value = data.phoneNumber || '';
+      profilePhoto = data.profilePhoto || '';
+      renderAvatar(data);
+    }
+
+    $('profile-photo').addEventListener('change', event => {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      $('file-name').textContent = file.name;
+      if (file.size > 350000) {
+        setMessage('Please choose an image smaller than 350 KB.');
+        event.target.value = '';
+        $('file-name').textContent = 'No file selected';
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        profilePhoto = reader.result;
+        renderAvatar(currentUser() || {});
+      };
+      reader.readAsDataURL(file);
+    });
+
+    $('remove-photo').addEventListener('click', () => {
+      profilePhoto = '';
+      $('profile-photo').value = '';
+      $('file-name').textContent = 'No file selected';
+      renderAvatar(currentUser() || {});
+      setMessage('');
+    });
+
+    ['first-name', 'last-name'].forEach(id => {
+      $(id).addEventListener('input', () => {
+        if (!profilePhoto) renderAvatar(currentUser() || {});
+      });
+    });
+
+    $('profile-form').addEventListener('submit', async event => {
+      event.preventDefault();
+      setMessage('');
+      const user = currentUser();
+      const payload = {
+        token: user.token,
+        firstName: $('first-name').value.trim(),
+        lastName: $('last-name').value.trim(),
+        email: $('email').value.trim(),
+        phoneCountryCode: $('phone-country').value,
+        phoneNumber: $('phone-number').value.trim(),
+        profilePhoto
+      };
+
+      if (!payload.firstName || !payload.lastName || !payload.email) {
+        setMessage('First name, last name, and email are required.');
+        return;
+      }
+
+      $('update-btn').disabled = true;
+      try {
+        const response = await fetch('/api/auth/update-profile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.message || 'Unable to update profile.');
+        sessionStorage.setItem('sp_current_user', JSON.stringify(data));
+        window.location.href = '/dashboard.html?profileUpdated=1#settings';
+      } catch (err) {
+        setMessage(err.message || 'Unable to update profile.');
+      } finally {
+        $('update-btn').disabled = false;
+      }
+    });
+
+    populateCountryCodes('+91');
+    loadProfile();
+  </script>
+</body>
+</html>

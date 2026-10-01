@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkillPulse — Sign In</title>
+  <link rel="icon" type="image/jpeg" href="./SkillPulse logo.png"> 
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css?v=warm-ui-1">
+</head>
+<body>
+
+  <!-- ══ AMBIENT BACKGROUND BLOBS ══ -->
+  <div class="bg-blob blob-1"></div>
+  <div class="bg-blob blob-2"></div>
+  <div class="bg-blob blob-3"></div>
+  <div class="bg-blob blob-4"></div>
+
+  <!-- ══ NOISE OVERLAY ══ -->
+  <div class="noise-overlay"></div>
+
+  <!-- ══════════════════════════════════
+       AUTH PAGE
+  ══════════════════════════════════ -->
+  <div id="auth-page" class="auth-page">
+    <div class="auth-card">
+
+      <!-- Logo -->
+      <div class="auth-logo-wrap">
+        <img src="./assets/SkillPulse logo.png" alt="SkillPulse" class="auth-logo">
+        <div class="auth-logo-ring r1"></div>
+        <div class="auth-logo-ring r2"></div>
+      </div>
+
+      <div class="auth-brand">
+        <span class="brand-skill">Skill</span><span class="brand-pulse">Pulse</span>
+      </div>
+      <p class="auth-tagline">Know before it fades.</p>
+
+      <!-- Toggle tabs -->
+      <div class="auth-tabs">
+        <button class="tab-btn active" id="tab-login" onclick="switchTab('login')">
+          <span>Login</span>
+        </button>
+        <button class="tab-btn" id="tab-register" onclick="switchTab('register')">
+          <span>Register</span>
+        </button>
+        <div class="tab-slider" id="tab-slider"></div>
+      </div>
+
+      <!-- ══ LOGIN FORM ══ -->
+      <form id="login-form" class="auth-form active" novalidate>
+        <div class="form-group">
+          <label for="login-email">Email Address</label>
+          <div class="input-wrap">
+            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <input type="email" id="login-email" placeholder="you@example.com" autocomplete="email">
+          </div>
+          <span class="field-error" id="login-email-err"></span>
+        </div>
+
+        <div class="form-group">
+          <label for="login-password">Password</label>
+          <div class="input-wrap">
+            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <input type="password" id="login-password" placeholder="Enter your password" autocomplete="current-password">
+            <button type="button" class="toggle-password" onclick="togglePassword('login-password', this)" aria-label="Show password">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <span class="field-error" id="login-password-err"></span>
+          <div style="text-align:right;margin-top:.45rem"><a href="/forgot-password.html" class="switch-link" style="font-size:.78rem;text-decoration:none">Forgot password?</a></div>
+        </div>
+
+        <div class="form-global-error" id="login-global-err"></div>
+
+        <button type="submit" class="auth-btn" id="login-btn">
+          <span class="btn-text">Sign In</span>
+          <span class="btn-loader" hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+          </span>
+        </button>
+
+        <p class="form-switch">
+          Don't have an account?
+          <button type="button" class="switch-link" onclick="switchTab('register')">Create one →</button>
+        </p>
+      </form>
+
+      <!-- ══ REGISTER FORM ══ -->
+      <form id="register-form" class="auth-form" novalidate>
+        <div class="form-group">
+          <label for="reg-name">Full Name</label>
+          <div class="input-wrap">
+            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <input type="text" id="reg-name" placeholder="Aman Shankar" autocomplete="name">
+          </div>
+          <span class="field-error" id="reg-name-err"></span>
+        </div>
+
+        <div class="form-group">
+          <label for="reg-email">Email Address</label>
+          <div class="input-wrap">
+            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <input type="email" id="reg-email" placeholder="you@example.com" autocomplete="email">
+          </div>
+          <span class="field-error" id="reg-email-err"></span>
+        </div>
+
+        <div class="form-group">
+          <label for="reg-password">Password</label>
+          <div class="input-wrap">
+            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <input type="password" id="reg-password" placeholder="Min. 8 characters" autocomplete="new-password">
+            <button type="button" class="toggle-password" onclick="togglePassword('reg-password', this)" aria-label="Show password">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <span class="field-error" id="reg-password-err"></span>
+          <!-- Password strength bar -->
+          <div class="strength-bar-wrap" id="strength-wrap">
+            <div class="strength-bar"><div class="strength-fill" id="strength-fill"></div></div>
+            <span class="strength-label" id="strength-label"></span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="reg-confirm">Confirm Password</label>
+          <div class="input-wrap">
+            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 12l2 2 4-4"/><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <input type="password" id="reg-confirm" placeholder="Repeat your password" autocomplete="new-password">
+            <button type="button" class="toggle-password" onclick="togglePassword('reg-confirm', this)" aria-label="Show password">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <span class="field-error" id="reg-confirm-err"></span>
+        </div>
+
+        <div class="form-global-error" id="reg-global-err"></div>
+
+        <button type="submit" class="auth-btn" id="register-btn">
+          <span class="btn-text">Create Account</span>
+          <span class="btn-loader" hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+          </span>
+        </button>
+
+        <p class="form-switch">
+          Already have an account?
+          <button type="button" class="switch-link" onclick="switchTab('login')">Sign in →</button>
+        </p>
+      </form>
+
+    </div><!-- /.auth-card -->
+  </div><!-- /#auth-page -->
+
+
+  <!-- ══════════════════════════════════
+       DASHBOARD PLACEHOLDER
+  ══════════════════════════════════ -->
+  <div id="dashboard-page" class="dashboard-page" hidden>
+
+    <!-- Dashboard Nav -->
+    <nav class="dash-nav">
+      <div class="dash-nav-brand">
+        <img src="assets/images/SkillPulse logo .png" alt="SkillPulse" class="dash-logo">
+        <span class="brand-skill">Skill</span><span class="brand-pulse">Pulse</span>
+      </div>
+      <div class="dash-nav-right">
+        <div class="dash-user-chip" id="dash-user-chip">
+          <span class="dash-user-avatar" id="dash-avatar">AS</span>
+          <span class="dash-user-name" id="dash-username">Aman</span>
+        </div>
+        <button class="dash-logout-btn" onclick="logout()">Sign Out</button>
+      </div>
+    </nav>
+
+    <!-- Dashboard Body -->
+    <main class="dash-main">
+      <div class="dash-welcome">
+        <div class="dash-welcome-text">
+          <div class="s-tag">Dashboard</div>
+          <h1 class="dash-title">Welcome back, <em id="dash-greeting-name">Aman</em> 👋</h1>
+          <p class="dash-subtitle">Your skill health is being tracked. This is a placeholder — your full dashboard will appear here.</p>
+        </div>
+        <img src="assets/images/SkillPulse logo .png" alt="" class="dash-hero-logo" aria-hidden="true">
+      </div>
+
+      <!-- Placeholder cards -->
+      <div class="dash-placeholder-grid">
+        <div class="dash-placeholder-card">
+          <div class="dpc-icon">📊</div>
+          <div class="dpc-label">Skill Health Score</div>
+          <div class="dpc-value">—</div>
+          <div class="dpc-note">Coming soon</div>
+        </div>
+        <div class="dash-placeholder-card">
+          <div class="dpc-icon">⚡</div>
+          <div class="dpc-label">Decay Alerts</div>
+          <div class="dpc-value">—</div>
+          <div class="dpc-note">Coming soon</div>
+        </div>
+        <div class="dash-placeholder-card">
+          <div class="dpc-icon">🔥</div>
+          <div class="dpc-label">Practice Streak</div>
+          <div class="dpc-value">—</div>
+          <div class="dpc-note">Coming soon</div>
+        </div>
+        <div class="dash-placeholder-card">
+          <div class="dpc-icon">🏆</div>
+          <div class="dpc-label">Skills Tracked</div>
+          <div class="dpc-value">—</div>
+          <div class="dpc-note">Coming soon</div>
+        </div>
+      </div>
+
+      <div class="dash-placeholder-banner">
+        🚧 &nbsp; Full dashboard coming soon. Authentication is working perfectly!
+      </div>
+    </main>
+
+  </div><!-- /#dashboard-page -->
+
+  <script src="assets/js/script.js"></script>
+</body>
+</html>

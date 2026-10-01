@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkillPulse - AI Coach</title>
+  <link rel="icon" href="./SkillPulse logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:wght@500;600&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+  <style>
+    :root{--canvas:#f5ede4;--surface:#fffaf7;--line:#eadbd2;--ink:#3a2a22;--muted:#8a7167;--primary:#9b7464;--primary-dark:#7f5e50;--primary-soft:#f1e6df;--success:#7aab7a;--success-soft:#edf6eb;--danger:#d4685a;--danger-soft:#fae9e6;--warning:#d4aa5a;--warning-soft:#fbf2df;--shadow:0 8px 24px rgba(140,100,80,.10)}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'DM Sans',sans-serif;background:var(--canvas);color:var(--ink);min-height:100vh}
+    button,textarea{font:inherit}
+    .app{display:grid;grid-template-columns:220px minmax(0,1fr);min-height:100vh}
+    .sidebar{background:#3a2a22;color:#fff;padding:22px 15px;display:flex;flex-direction:column;gap:8px}
+    .brand{display:flex;align-items:center;gap:10px;padding:0 8px 20px;font-weight:700}
+    .brand img{width:30px;height:30px;border-radius:7px}
+    .nav{display:flex;align-items:center;gap:10px;padding:10px;border-radius:7px;color:#d8c9c1;text-decoration:none;font-size:13px}
+    .nav.active{background:var(--primary);color:#fff}
+    .nav:hover{background:rgba(255,255,255,.08);color:#fff}
+    .nav.active:hover{background:var(--primary)}
+    .nav svg{width:17px}
+    .main{padding:28px 32px;min-width:0}
+    .header h1{font-family:'Fraunces',serif;font-size:29px;font-weight:600}
+    .header p{color:var(--muted);font-size:12px;margin-top:5px}
+    .card{background:var(--surface);border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow);padding:20px}
+    .top-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:16px;margin:22px 0 16px}
+    .card h2{font-size:14px;font-weight:700;margin-bottom:4px}
+    .card .sub{color:var(--muted);font-size:11px;margin-bottom:14px}
+    .pill{display:inline-flex;align-items:center;padding:5px 11px;border-radius:99px;font-size:11px;font-weight:700}
+    .pill.ok{background:var(--success-soft);color:#57825a}
+    .pill.warn{background:var(--warning-soft);color:#a87820}
+    .pill.bad{background:var(--danger-soft);color:var(--danger)}
+    .pill.none{background:var(--primary-soft);color:var(--primary)}
+    .reasons{list-style:none;margin-top:14px;display:flex;flex-direction:column;gap:7px}
+    .reasons li{font-size:12px;color:var(--muted);padding-left:16px;position:relative;line-height:1.45}
+    .reasons li::before{content:'';position:absolute;left:2px;top:6px;width:6px;height:6px;border-radius:50%;background:var(--primary)}
+    .facts{display:flex;gap:18px;margin-top:16px;font-size:11px;color:var(--muted)}
+    .facts strong{display:block;color:var(--ink);font-size:18px;margin-bottom:2px}
+    .note{margin-top:14px;font-size:10px;color:var(--muted);line-height:1.5}
+    .topic-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+    .topic-row:first-of-type{border-top:0}
+    .topic-row strong{font-size:12px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .topic-row span.meta{font-size:10px;color:var(--muted)}
+    .bar{height:6px;border-radius:99px;background:rgba(155,116,100,.14);margin-top:6px;overflow:hidden}
+    .bar i{display:block;height:100%;border-radius:99px;background:var(--primary)}
+    .bar i.low{background:var(--danger)}
+    .bar i.mid{background:var(--warning)}
+    .bar i.high{background:var(--success)}
+    .btn{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:7px;padding:8px 12px;cursor:pointer;font-weight:600;font-size:11px}
+    .btn:hover{background:var(--primary-soft)}
+    .btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+    .btn.primary:hover{background:var(--primary-dark)}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+    .empty{color:var(--muted);font-size:12px;padding:8px 0}
+    .chat{display:flex;flex-direction:column;height:520px;padding:0;overflow:hidden}
+    .chat-head{padding:16px 20px;border-bottom:1px solid var(--line)}
+    .messages{flex:1;overflow-y:auto;padding:18px 20px;display:flex;flex-direction:column;gap:12px}
+    .msg{max-width:78%;padding:11px 14px;border-radius:12px;font-size:13px;line-height:1.55;word-wrap:break-word}
+    .msg.user{align-self:flex-end;background:var(--primary);color:#fff;border-bottom-right-radius:3px}
+    .msg.bot{align-self:flex-start;background:#fff;border:1px solid var(--line);border-bottom-left-radius:3px}
+    .msg.err{align-self:flex-start;background:var(--danger-soft);color:var(--danger);font-size:12px}
+    .msg.typing{color:var(--muted);font-style:italic}
+    .chips{display:flex;flex-wrap:wrap;gap:8px;padding:0 20px 12px}
+    .chip{border:1px solid var(--line);background:#fff;border-radius:99px;padding:6px 12px;font-size:11px;cursor:pointer;color:var(--muted)}
+    .chip:hover{background:var(--primary-soft);color:var(--primary)}
+    .composer{display:flex;gap:10px;padding:14px 20px;border-top:1px solid var(--line);background:var(--surface)}
+    .composer textarea{flex:1;resize:none;height:44px;border:1px solid var(--line);border-radius:8px;padding:11px 12px;outline:none;background:#fff;color:var(--ink)}
+    .composer textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(155,116,100,.12)}
+    .disclaimer{font-size:10px;color:var(--muted);padding:0 20px 12px}
+    @media(max-width:900px){.app{grid-template-columns:76px 1fr}.sidebar{padding:16px 10px}.brand span,.nav span{display:none}.brand,.nav{justify-content:center}.top-grid{grid-template-columns:1fr}.main{padding:22px 16px}.msg{max-width:92%}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand"><img src="./SkillPulse logo.png" alt=""><span>SkillPulse</span></div>
+    <a class="nav" href="dashboard.html"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
+    <a class="nav" href="dashboard.html#plan"><i data-lucide="list-checks"></i><span>Practice Plan</span></a>
+    <a class="nav" href="personalized-plan.html"><i data-lucide="calendar-check"></i><span>My Plan</span></a>
+    <a class="nav active" href="ai-coach.html"><i data-lucide="sparkles"></i><span>AI Coach</span></a>
+    <a class="nav" href="chat.html"><i data-lucide="message-circle"></i><span>Study Chat</span></a>
+  </aside>
+
+  <main class="main">
+    <div class="header"><h1>AI Coach</h1><p>Your study check-in, focus topics and a tutor you can ask anything about your learning</p></div>
+
+    <div class="top-grid">
+      <section class="card">
+        <h2>Your engagement check</h2>
+        <div class="sub">Based on your recent practice pattern</div>
+        <div id="engagement"><div class="empty">Loading...</div></div>
+      </section>
+      <section class="card">
+        <h2>Topics to focus on</h2>
+        <div class="sub">Your lowest mastery first. Ask the coach to help with any of them.</div>
+        <div id="topics"><div class="empty">Loading...</div></div>
+      </section>
+    </div>
+
+    <section class="card chat">
+      <div class="chat-head"><h2>Study coach</h2><div class="sub" style="margin:0">Explains concepts, plans your practice and knows your progress</div></div>
+      <div class="messages" id="messages">
+        <div class="msg bot">Hi! I can explain a concept, suggest what to practise next, or help you build a routine. What would you like to work on?</div>
+      </div>
+      <div class="chips" id="chips">
+        <button class="chip" type="button">Which topic should I practise first?</button>
+        <button class="chip" type="button">Give me a 15-minute study routine</button>
+        <button class="chip" type="button">Quiz me with one question</button>
+        <button class="chip" type="button">How can I remember things longer?</button>
+      </div>
+      <div class="composer">
+        <textarea id="input" maxlength="1200" placeholder="Ask your coach..." aria-label="Message to the study coach"></textarea>
+        <button class="btn primary" id="send" type="button">Send</button>
+      </div>
+      <div class="disclaimer">The coach is an AI and can make mistakes. Check important facts against your course material.</div>
+    </section>
+  </main>
+</div>
+
+<script>
+  const chatHistory = [];
+  let busy = false;
+
+  function icons() { if (window.lucide) lucide.createIcons({ 'stroke-width': 1.8 }); }
+  function session() { try { return JSON.parse(sessionStorage.getItem('sp_current_user') || 'null'); } catch (e) { return null; } }
+  function token() { const s = session(); return s && s.token; }
+  function esc(value) {
+    return String(value == null ? '' : value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  async function api(url, options) {
+    const response = await fetch(url, options);
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      if (/sign in|session expired/i.test(data.message || '')) { location.href = 'login.html'; }
+      const error = new Error(data.message || 'Request failed. Please try again.');
+      error.status = response.status;
+      throw error;
+    }
+    return data;
+  }
+
+  // Model text is untrusted: escape first, then turn only newlines and "- " bullets into markup.
+  function formatReply(text) {
+    return esc(text).split('\n').map(line => line.replace(/^\s*[-*]\s+/, '&bull; ')).join('<br>');
+  }
+
+  function addMessage(kind, html) {
+    const box = document.getElementById('messages');
+    const el = document.createElement('div');
+    el.className = 'msg ' + kind;
+    el.innerHTML = html;
+    box.appendChild(el);
+    box.scrollTop = box.scrollHeight;
+    return el;
+  }
+
+  // The study chat now lives on chat.html (saved chats, streaming replies). Questions asked here open it.
+  function send(text) {
+    const message = String(text || '').trim();
+    if (!message) return;
+    location.href = 'chat.html?q=' + encodeURIComponent(message);
+  }
+
+  function levelInfo(level) {
+    if (level === 'LOW') return { cls: 'ok', label: 'On track', line: 'Your practice rhythm looks healthy. Keep it going.' };
+    if (level === 'MEDIUM') return { cls: 'warn', label: 'Slipping a little', line: 'A short session today would help you stay on track.' };
+    return { cls: 'bad', label: 'Time for a restart', line: 'A small 10-minute session is a good way back in.' };
+  }
+
+  function renderEngagement(data) {
+    const el = document.getElementById('engagement');
+    const e = data.engagement;
+    const streak = Number(data.streak || 0);
+    const due = Number(data.dueReviews || 0);
+    if (!e) {
+      el.innerHTML = '<span class="pill none">Not available yet</span><div class="note">' + esc(data.engagementNote || '') + '</div>';
+      return;
+    }
+    const info = levelInfo(e.level);
+    const reasons = (e.reasons || []).map(r => '<li>' + esc(r) + '</li>').join('');
+    const engine = String(e.engine || '');
+    const how = engine.indexOf('xgboost') >= 0
+      ? 'Estimated by a machine-learning model that was trained on simulated learners, so treat it as a friendly nudge, not a verdict.'
+      : 'Estimated with a simple rule-based check on your recent practice, so treat it as a friendly nudge, not a verdict.';
+    el.innerHTML =
+      '<span class="pill ' + info.cls + '">' + esc(info.label) + '</span>' +
+      '<div class="sub" style="margin:10px 0 0">' + esc(info.line) + '</div>' +
+      '<ul class="reasons">' + reasons + '</ul>' +
+      '<div class="facts"><div><strong>' + streak + '</strong>day streak</div><div><strong>' + due + '</strong>reviews due</div></div>' +
+      '<div class="note">' + esc(how) + '</div>';
+  }
+
+  function renderTopics(data) {
+    const el = document.getElementById('topics');
+    const topics = data.weakTopics || [];
+    if (!topics.length) {
+      el.innerHTML = '<div class="empty">No practice history yet. Answer a few questions and your focus topics will appear here.</div>';
+      return;
+    }
+    el.innerHTML = topics.map((t, i) => {
+      const pct = Math.max(0, Math.min(100, Number(t.masteryPercent || 0)));
+      const tone = pct < 40 ? 'low' : pct < 70 ? 'mid' : 'high';
+      return '<div class="topic-row"><div><strong>' + esc(t.topic) + '</strong><span class="meta">' + esc(t.subject) + ' &middot; ' + pct + '% mastery &middot; ' + Number(t.attempts || 0) + ' answers</span>' +
+        '<div class="bar"><i class="' + tone + '" style="width:' + pct + '%"></i></div></div>' +
+        '<button class="btn" type="button" data-topic="' + i + '">Ask coach</button></div>';
+    }).join('');
+    el.querySelectorAll('button[data-topic]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const t = topics[Number(btn.getAttribute('data-topic'))];
+        send('Help me understand ' + t.topic + ' (' + t.subject + '). Explain the key idea with one example.');
+      });
+    });
+  }
+
+  async function init() {
+    if (!token()) { location.href = 'login.html'; return; }
+    try {
+      const data = await api('/api/ai/me/overview?token=' + encodeURIComponent(token()));
+      renderEngagement(data);
+      renderTopics(data);
+    } catch (error) {
+      document.getElementById('engagement').innerHTML = '<div class="empty">' + esc(error.message) + '</div>';
+      document.getElementById('topics').innerHTML = '<div class="empty">Unavailable right now.</div>';
+    }
+    icons();
+  }
+
+  document.getElementById('send').addEventListener('click', () => send(document.getElementById('input').value));
+  document.getElementById('input').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(e.target.value); }
+  });
+  document.querySelectorAll('#chips .chip').forEach(chip => chip.addEventListener('click', () => send(chip.textContent)));
+
+  init();
+  icons();
+</script>
+</body>
+</html>

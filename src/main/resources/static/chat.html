@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkillPulse - Study Chat</title>
+  <link rel="icon" href="./SkillPulse logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:wght@500;600&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+  <style>
+    :root{--canvas:#f5ede4;--surface:#fffaf7;--line:#eadbd2;--ink:#3a2a22;--muted:#8a7167;--primary:#9b7464;--primary-dark:#7f5e50;--primary-soft:#f1e6df;--danger:#d4685a;--danger-soft:#fae9e6;--warning-soft:#fbf2df;--shadow:0 8px 24px rgba(140,100,80,.10)}
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%}
+    body{font-family:'DM Sans',sans-serif;background:var(--canvas);color:var(--ink)}
+    button,textarea{font:inherit}
+    .app{display:grid;grid-template-columns:220px minmax(0,1fr);height:100vh}
+    .sidebar{background:#3a2a22;color:#fff;padding:22px 15px;display:flex;flex-direction:column;gap:8px}
+    .brand{display:flex;align-items:center;gap:10px;padding:0 8px 20px;font-weight:700}
+    .brand img{width:30px;height:30px;border-radius:7px}
+    .nav{display:flex;align-items:center;gap:10px;padding:10px;border-radius:7px;color:#d8c9c1;text-decoration:none;font-size:13px}
+    .nav.active{background:var(--primary);color:#fff}
+    .nav:hover{background:rgba(255,255,255,.08);color:#fff}
+    .nav.active:hover{background:var(--primary)}
+    .nav svg{width:17px}
+    .main{display:grid;grid-template-columns:250px minmax(0,1fr);min-width:0;height:100vh}
+    .convs{border-right:1px solid var(--line);background:var(--surface);display:flex;flex-direction:column;min-height:0}
+    .convs-head{padding:16px 14px;border-bottom:1px solid var(--line)}
+    .convs-head h2{font-family:'Fraunces',serif;font-size:19px;margin-bottom:10px}
+    .conv-list{flex:1;overflow-y:auto;padding:8px}
+    .conv{display:flex;align-items:center;gap:6px;padding:9px 10px;border-radius:7px;cursor:pointer;font-size:12px;color:var(--ink)}
+    .conv:hover{background:var(--primary-soft)}
+    .conv.active{background:var(--primary-soft);font-weight:600}
+    .conv span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .conv button{border:0;background:transparent;color:var(--muted);cursor:pointer;padding:2px 5px;border-radius:5px;font-size:14px;line-height:1}
+    .conv button:hover{color:var(--danger);background:var(--danger-soft)}
+    .empty{color:var(--muted);font-size:12px;padding:12px}
+    .btn{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:7px;padding:9px 13px;cursor:pointer;font-weight:600;font-size:12px}
+    .btn:hover{background:var(--primary-soft)}
+    .btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+    .btn.primary:hover{background:var(--primary-dark)}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+    .btn.full{width:100%}
+    .chat{display:flex;flex-direction:column;min-width:0;min-height:0}
+    .chat-head{padding:16px 24px;border-bottom:1px solid var(--line);background:var(--surface)}
+    .chat-head h1{font-family:'Fraunces',serif;font-size:22px;font-weight:600}
+    .chat-head p{color:var(--muted);font-size:12px;margin-top:3px}
+    .messages{flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:12px}
+    .msg{max-width:78%;padding:11px 14px;border-radius:12px;font-size:13px;line-height:1.6;word-wrap:break-word;overflow-wrap:anywhere}
+    .msg.user{align-self:flex-end;background:var(--primary);color:#fff;border-bottom-right-radius:3px;white-space:pre-wrap}
+    .msg.bot{align-self:flex-start;background:#fff;border:1px solid var(--line);border-bottom-left-radius:3px}
+    .msg.err{align-self:flex-start;background:var(--danger-soft);color:var(--danger);font-size:12px}
+    .msg.typing{color:var(--muted);font-style:italic}
+    .msg.bot p{margin:0 0 8px}.msg.bot p:last-child{margin-bottom:0}
+    .msg.bot ul,.msg.bot ol{margin:0 0 8px 20px}
+    .msg.bot code{background:var(--primary-soft);padding:1px 5px;border-radius:4px;font-size:12px;font-family:Consolas,monospace}
+    .msg.bot pre{background:#2f2420;color:#f5ede4;padding:12px;border-radius:8px;overflow-x:auto;margin:0 0 8px}
+    .msg.bot pre code{background:transparent;padding:0;color:inherit}
+    .msg .stopped{display:block;margin-top:6px;font-size:11px;color:var(--muted);font-style:italic}
+    .chips{display:flex;flex-wrap:wrap;gap:8px;padding:0 24px 12px}
+    .chip{border:1px solid var(--line);background:#fff;border-radius:99px;padding:6px 12px;font-size:11px;cursor:pointer;color:var(--muted)}
+    .chip:hover{background:var(--primary-soft);color:var(--primary)}
+    .composer{display:flex;gap:10px;padding:14px 24px;border-top:1px solid var(--line);background:var(--surface)}
+    .composer textarea{flex:1;resize:none;height:46px;border:1px solid var(--line);border-radius:8px;padding:12px;outline:none;background:#fff;color:var(--ink)}
+    .composer textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(155,116,100,.12)}
+    .disclaimer{font-size:10px;color:var(--muted);padding:0 24px 12px;background:var(--surface)}
+    @media(max-width:900px){.app{grid-template-columns:76px 1fr}.sidebar{padding:16px 10px}.brand span,.nav span{display:none}.brand,.nav{justify-content:center}.main{grid-template-columns:1fr}.convs{display:none}.msg{max-width:92%}.messages,.composer,.chips,.chat-head,.disclaimer{padding-left:14px;padding-right:14px}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand"><img src="./SkillPulse logo.png" alt=""><span>SkillPulse</span></div>
+    <a class="nav" href="dashboard.html"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
+    <a class="nav" href="personalized-plan.html"><i data-lucide="calendar-check"></i><span>My Plan</span></a>
+    <a class="nav" href="ai-coach.html"><i data-lucide="sparkles"></i><span>AI Coach</span></a>
+    <a class="nav active" href="chat.html"><i data-lucide="message-circle"></i><span>Study Chat</span></a>
+  </aside>
+
+  <div class="main">
+    <aside class="convs">
+      <div class="convs-head">
+        <h2>Chats</h2>
+        <button class="btn primary full" id="newChat" type="button">+ New chat</button>
+      </div>
+      <div class="conv-list" id="convList"><div class="empty">Loading...</div></div>
+    </aside>
+
+    <section class="chat">
+      <div class="chat-head"><h1>Study Chat</h1><p>Ask about any topic you are learning. The coach knows your progress and stays on study topics.</p></div>
+      <div class="messages" id="messages"></div>
+      <div class="chips" id="chips">
+        <button class="chip" type="button">Which topic should I practise first?</button>
+        <button class="chip" type="button">Explain binary search with an example</button>
+        <button class="chip" type="button">Give me a 15-minute study routine</button>
+        <button class="chip" type="button">Quiz me with one question</button>
+      </div>
+      <div class="composer">
+        <textarea id="input" maxlength="1200" placeholder="Ask your coach... (Enter to send, Shift+Enter for a new line)" aria-label="Message to the study coach"></textarea>
+        <button class="btn primary" id="send" type="button">Send</button>
+        <button class="btn" id="stop" type="button" style="display:none">Stop</button>
+      </div>
+      <div class="disclaimer">The coach is an AI and can make mistakes. Check important facts against your course material.</div>
+    </section>
+  </div>
+</div>
+
+<script>
+  let activeId = null;
+  let busy = false;
+  let controller = null;
+
+  const $ = id => document.getElementById(id);
+  function icons() { if (window.lucide) lucide.createIcons({ 'stroke-width': 1.8 }); }
+  function esc(v) { return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+  // ---- safe markdown: everything is escaped first, then only a small set of tags is produced ----
+  function inline(t) {
+    return esc(t).replace(/`([^`\n]+)`/g, '<code>$1</code>').replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
+  }
+  function block(text) {
+    const lines = text.split('\n');
+    let out = '', list = null, para = [];
+    const flushPara = () => { if (para.length) { out += '<p>' + para.map(inline).join('<br>') + '</p>'; para = []; } };
+    const closeList = () => { if (list) { out += '</' + list + '>'; list = null; } };
+    for (const line of lines) {
+      let m;
+      if ((m = line.match(/^\s*[-*]\s+(.*)$/))) { flushPara(); if (list !== 'ul') { closeList(); out += '<ul>'; list = 'ul'; } out += '<li>' + inline(m[1]) + '</li>'; }
+      else if ((m = line.match(/^\s*\d+[.)]\s+(.*)$/))) { flushPara(); if (list !== 'ol') { closeList(); out += '<ol>'; list = 'ol'; } out += '<li>' + inline(m[1]) + '</li>'; }
+      else if ((m = line.match(/^#{1,4}\s+(.*)$/))) { flushPara(); closeList(); out += '<p><strong>' + inline(m[1]) + '</strong></p>'; }
+      else if (!line.trim()) { flushPara(); closeList(); }
+      else { closeList(); para.push(line); }
+    }
+    flushPara(); closeList();
+    return out;
+  }
+  function md(src) {
+    return String(src || '').split('```').map((part, i) => {
+      if (i % 2 === 1) {
+        const nl = part.indexOf('\n');
+        const code = nl >= 0 ? part.slice(nl + 1) : part;
+        return '<pre><code>' + esc(code.replace(/\n$/, '')) + '</code></pre>';
+      }
+      return block(part);
+    }).join('');
+  }
+
+  // ---- api helper ----
+  async function api(url, options) {
+    const response = await fetch(url, options);
+    if (response.status === 401) { location.href = 'login.html'; throw new Error('Please sign in.'); }
+    if (response.status === 204) return {};
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.message || 'Request failed. Please try again.');
+    return data;
+  }
+
+  // ---- messages ----
+  function scrollDown() { const box = $('messages'); box.scrollTop = box.scrollHeight; }
+  function addMessage(kind, html) {
+    const el = document.createElement('div');
+    el.className = 'msg ' + kind;
+    el.innerHTML = html;
+    $('messages').appendChild(el);
+    scrollDown();
+    return el;
+  }
+  function welcome() {
+    $('messages').innerHTML = '';
+    addMessage('bot', md('Hi! I can explain a concept, suggest what to practise next, or help you plan your revision. What would you like to work on?'));
+    $('chips').style.display = 'flex';
+  }
+  function setBusy(value) {
+    busy = value;
+    $('send').style.display = value ? 'none' : '';
+    $('stop').style.display = value ? '' : 'none';
+    $('input').disabled = value;
+  }
+
+  // ---- conversations ----
+  async function loadList() {
+    try {
+      const list = await api('/api/chat/conversations');
+      const box = $('convList');
+      if (!list.length) { box.innerHTML = '<div class="empty">No saved chats yet.</div>'; return; }
+      box.innerHTML = list.map(c =>
+        '<div class="conv' + (c.id === activeId ? ' active' : '') + '" data-id="' + c.id + '"><span>' + esc(c.title) + '</span>' +
+        '<button type="button" title="Delete chat" data-del="' + c.id + '">&times;</button></div>').join('');
+      box.querySelectorAll('.conv').forEach(el => el.addEventListener('click', () => openChat(Number(el.getAttribute('data-id')))));
+      box.querySelectorAll('button[data-del]').forEach(btn => btn.addEventListener('click', ev => {
+        ev.stopPropagation();
+        removeChat(Number(btn.getAttribute('data-del')));
+      }));
+    } catch (e) { $('convList').innerHTML = '<div class="empty">' + esc(e.message) + '</div>'; }
+  }
+  async function openChat(id) {
+    if (busy) return;
+    try {
+      const data = await api('/api/chat/conversations/' + id);
+      activeId = data.id;
+      $('messages').innerHTML = '';
+      data.messages.forEach(m => {
+        if (m.role === 'user') addMessage('user', esc(m.content));
+        else addMessage('bot', md(m.content) + (m.stopped ? '<span class="stopped">Reply was stopped early.</span>' : ''));
+      });
+      $('chips').style.display = 'none';
+      loadList();
+    } catch (e) { addMessage('err', esc(e.message)); }
+  }
+  async function removeChat(id) {
+    if (busy || !confirm('Delete this chat?')) return;
+    try {
+      await api('/api/chat/conversations/' + id, { method: 'DELETE' });
+      if (activeId === id) { activeId = null; welcome(); }
+      loadList();
+    } catch (e) { addMessage('err', esc(e.message)); }
+  }
+  function newChat() { if (busy) return; activeId = null; welcome(); loadList(); $('input').focus(); }
+
+  // ---- sending (streamed) ----
+  async function send(text) {
+    const message = String(text || '').trim();
+    if (!message || busy) return;
+    setBusy(true);
+    $('input').value = '';
+    $('chips').style.display = 'none';
+    addMessage('user', esc(message));
+    const bubble = addMessage('bot typing', 'Thinking...');
+    let raw = '';
+    let streaming = false;
+    controller = new AbortController();
+    try {
+      const response = await fetch('/api/chat/stream', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'text/event-stream, application/json' },
+        body: JSON.stringify({ conversationId: activeId, message }),
+        signal: controller.signal
+      });
+      if (response.status === 401) { location.href = 'login.html'; return; }
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.message || 'Request failed. Please try again.');
+      }
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let failure = null;
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        let cut;
+        while ((cut = buffer.indexOf('\n\n')) >= 0) {
+          const block = buffer.slice(0, cut);
+          buffer = buffer.slice(cut + 2);
+          let name = 'message', data = '';
+          block.split('\n').forEach(line => {
+            if (line.startsWith('event:')) name = line.slice(6).trim();
+            else if (line.startsWith('data:')) data += line.slice(5).trim();
+          });
+          if (!data) continue;
+          let payload;
+          try { payload = JSON.parse(data); } catch (e) { continue; }
+          if (name === 'start') { activeId = payload.conversationId; }
+          else if (name === 'delta') {
+            if (!streaming) { streaming = true; bubble.classList.remove('typing'); }
+            raw += payload.text || '';
+            bubble.innerHTML = md(raw);
+            scrollDown();
+          } else if (name === 'error') { failure = payload; }
+        }
+      }
+      if (failure) {
+        if (raw) bubble.innerHTML = md(raw) + '<span class="stopped">' + esc(failure.message || 'The reply was interrupted.') + '</span>';
+        else { bubble.remove(); addMessage('err', esc(failure.message || 'The coach is unavailable right now.')); }
+      } else if (!raw) {
+        bubble.remove();
+        addMessage('err', 'No reply came back. Please try again.');
+      }
+    } catch (error) {
+      if (error.name === 'AbortError') {
+        if (raw) bubble.innerHTML = md(raw) + '<span class="stopped">Stopped.</span>';
+        else bubble.remove();
+      } else {
+        bubble.remove();
+        addMessage('err', esc(error.message));
+      }
+    } finally {
+      controller = null;
+      setBusy(false);
+      $('input').focus();
+      loadList();
+    }
+  }
+
+  $('send').addEventListener('click', () => send($('input').value));
+  $('stop').addEventListener('click', () => { if (controller) controller.abort(); });
+  $('newChat').addEventListener('click', newChat);
+  $('input').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(e.target.value); }
+  });
+  document.querySelectorAll('#chips .chip').forEach(chip => chip.addEventListener('click', () => send(chip.textContent)));
+
+  (function init() {
+    try { if (!JSON.parse(sessionStorage.getItem('sp_current_user') || 'null')) { location.href = 'login.html'; return; } }
+    catch (e) { location.href = 'login.html'; return; }
+    welcome();
+    loadList();
+    icons();
+    const q = new URLSearchParams(location.search).get('q');
+    if (q) { history.replaceState(null, '', 'chat.html'); send(q); }
+  })();
+</script>
+</body>
+</html>

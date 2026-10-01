@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>SkillPulse Admin - AI Insights</title>
+  <link rel="icon" href="./SkillPulse logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:wght@500;600&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+  <style>
+    :root{--canvas:#f5ede4;--surface:#fffaf7;--line:#eadbd2;--ink:#3a2a22;--muted:#8a7167;--primary:#9b7464;--primary-dark:#7f5e50;--primary-soft:#f1e6df;--success:#7aab7a;--success-soft:#edf6eb;--danger:#d4685a;--danger-soft:#fae9e6;--warning:#d4aa5a;--warning-soft:#fbf2df;--shadow:0 8px 24px rgba(140,100,80,.10)}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'DM Sans',sans-serif;background:var(--canvas);color:var(--ink);min-height:100vh}
+    button,input,select,textarea{font:inherit}
+    .app{display:grid;grid-template-columns:220px minmax(0,1fr);min-height:100vh}
+    .sidebar{background:#3a2a22;color:#fff;padding:22px 15px;display:flex;flex-direction:column;gap:8px}
+    .brand{display:flex;align-items:center;gap:10px;padding:0 8px 20px;font-weight:700}
+    .brand img{width:30px;height:30px;border-radius:7px}
+    .admin-label{padding:13px;background:#4a372f;border:1px solid rgba(255,255,255,.08);border-radius:7px;margin-bottom:12px}
+    .admin-label strong{font-size:13px}
+    .admin-label span{display:block;color:#c9b8af;font-size:10px;margin-top:3px}
+    .nav{display:flex;align-items:center;gap:10px;padding:10px;border-radius:7px;color:#d8c9c1;text-decoration:none;font-size:13px}
+    .nav.active{background:var(--primary);color:#fff}
+    .nav:hover{background:rgba(255,255,255,.08);color:#fff}
+    .nav.active:hover{background:var(--primary)}
+    .nav svg{width:17px}
+    .logout{width:100%;justify-content:flex-start;margin-top:auto;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:#d8c9c1;cursor:pointer}
+    .logout:hover{background:rgba(216,100,87,.16);border-color:rgba(216,100,87,.34);color:#fff}
+    .main{padding:28px 32px;min-width:0}
+    .header h1{font-family:'Fraunces',serif;font-size:29px;font-weight:600}
+    .header p{color:var(--muted);font-size:12px;margin-top:5px}
+    .tabs{display:flex;gap:6px;margin:20px 0 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+    .tab{border:0;background:transparent;padding:10px 14px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+    .tab:hover{color:var(--ink)}
+    .tab.active{color:var(--primary);border-bottom-color:var(--primary)}
+    .panel{display:none}
+    .panel.active{display:block}
+    .card{background:var(--surface);border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow)}
+    .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:14px}
+    .stat{padding:16px}
+    .stat span{font-size:10px;color:var(--muted);text-transform:uppercase;font-weight:700}
+    .stat strong{display:block;font-size:24px;margin-top:6px}
+    .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:12px 14px;margin-bottom:14px}
+    .toolbar .grow{flex:1}
+    .control{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:7px;padding:9px 11px;outline:none;min-width:130px}
+    .control:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(155,116,100,.12)}
+    .btn{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:7px;padding:9px 13px;cursor:pointer;font-weight:600;font-size:12px;display:inline-flex;align-items:center;gap:6px}
+    .btn:hover{background:var(--primary-soft)}
+    .btn.primary{background:var(--primary);color:#fff;border-color:transparent}
+    .btn.primary:hover{background:var(--primary-dark)}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+    .btn.small{padding:6px 10px;font-size:11px}
+    .table-card{overflow:hidden}
+    .table-wrap{overflow:auto}
+    table{width:100%;border-collapse:collapse;min-width:820px}
+    th{text-align:left;padding:12px 14px;background:#f7eee8;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.4px}
+    td{padding:12px 14px;border-top:1px solid var(--line);vertical-align:top;font-size:12px}
+    td strong{display:block}
+    td span.meta{display:block;color:var(--muted);font-size:10px;margin-top:3px}
+    ul.plain{list-style:none;display:flex;flex-direction:column;gap:4px}
+    ul.plain li{color:var(--muted);font-size:11px;line-height:1.4}
+    .pill{display:inline-flex;padding:4px 9px;border-radius:99px;font-size:10px;font-weight:700;white-space:nowrap}
+    .pill.high,.pill.bad{background:var(--danger-soft);color:var(--danger)}
+    .pill.medium,.pill.warn{background:var(--warning-soft);color:#a87820}
+    .pill.low,.pill.ok{background:var(--success-soft);color:#57825a}
+    .pill.info{background:var(--primary-soft);color:var(--primary)}
+    .flags{display:flex;flex-wrap:wrap;gap:4px}
+    .empty{padding:36px;text-align:center;color:var(--muted);font-size:13px}
+    .note{background:var(--primary-soft);border:1px solid var(--line);border-radius:8px;padding:11px 14px;font-size:11px;color:var(--muted);line-height:1.55;margin-bottom:14px}
+    .seg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;margin-bottom:14px}
+    .seg{padding:16px}
+    .seg h3{font-size:14px;margin-bottom:4px}
+    .seg p{font-size:11px;color:var(--muted);line-height:1.5;margin-top:6px}
+    .seg .action{margin-top:10px;padding-top:10px;border-top:1px solid var(--line);font-size:11px}
+    .seg .stat-line{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;font-size:10px;color:var(--muted)}
+    .bar{height:6px;border-radius:99px;background:rgba(155,116,100,.14);margin-top:8px;overflow:hidden}
+    .bar i{display:block;height:100%;background:var(--primary);border-radius:99px}
+    .draft{padding:16px;margin-bottom:12px}
+    .draft h3{font-size:13px;line-height:1.5;margin-bottom:10px}
+    .opt{padding:8px 11px;border:1px solid var(--line);border-radius:7px;font-size:12px;margin:6px 0;background:#fff}
+    .opt.correct{border-color:var(--success);background:var(--success-soft)}
+    .draft .expl{font-size:11px;color:var(--muted);margin-top:10px;line-height:1.5}
+    .draft .foot{display:flex;align-items:center;justify-content:space-between;margin-top:12px;gap:10px}
+    .overlay{position:fixed;inset:0;background:rgba(45,31,25,.55);display:none;align-items:center;justify-content:center;padding:24px;z-index:30}
+    .overlay.show{display:flex}
+    .modal{width:min(620px,100%);max-height:92vh;overflow:auto;background:var(--surface);border-radius:9px;border:1px solid var(--line);padding:22px}
+    .modal h2{font-family:'Fraunces',serif;font-size:21px;margin-bottom:4px}
+    .modal label{display:block;font-size:11px;font-weight:700;margin:14px 0 6px}
+    .modal .control{width:100%}
+    .modal textarea.control{min-height:200px;resize:vertical;line-height:1.5}
+    .modal .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;flex-wrap:wrap}
+    .toast{position:fixed;right:24px;bottom:24px;background:#3a2a22;color:#fff;padding:12px 15px;border-radius:7px;font-size:12px;transform:translateY(80px);opacity:0;transition:.2s;z-index:50}
+    .toast.show{transform:none;opacity:1}
+    @media(max-width:900px){.app{grid-template-columns:76px 1fr}.sidebar{padding:16px 10px}.brand span,.admin-label,.nav span{display:none}.brand,.nav{justify-content:center}.stats{grid-template-columns:repeat(2,1fr)}.main{padding:22px 16px}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand"><img src="./SkillPulse logo.png" alt=""><span>SkillPulse</span></div>
+    <div class="admin-label"><strong>AI Insights</strong><span>Administrator workspace</span></div>
+    <a class="nav" href="admin.html"><i data-lucide="list-checks"></i><span>Questions</span></a>
+    <a class="nav" href="admin-users.html"><i data-lucide="users"></i><span>Users</span></a>
+    <a class="nav active" href="admin-ai.html"><i data-lucide="sparkles"></i><span>AI Insights</span></a>
+    <a class="nav" href="dashboard.html"><i data-lucide="layout-dashboard"></i><span>User Dashboard</span></a>
+    <button class="nav logout" onclick="logoutAdmin()"><i data-lucide="log-out"></i><span>Logout</span></button>
+  </aside>
+
+  <main class="main" id="main">
+    <div class="header"><h1>AI Insights</h1><p>Find learners who are slipping, understand your learner groups, improve weak questions and draft new ones</p></div>
+
+    <div class="tabs" role="tablist">
+      <button class="tab active" data-tab="risk" role="tab">At-risk learners</button>
+      <button class="tab" data-tab="segments" role="tab">Learner segments</button>
+      <button class="tab" data-tab="quality" role="tab">Question quality</button>
+      <button class="tab" data-tab="drafts" role="tab">AI question drafts</button>
+      <button class="tab" data-tab="training" role="tab">Model training</button>
+    </div>
+
+    <!-- RISK -->
+    <section class="panel active" id="panel-risk">
+      <div class="stats">
+        <div class="card stat"><span>Learners scored</span><strong id="r-total">-</strong></div>
+        <div class="card stat"><span>High risk</span><strong id="r-high">-</strong></div>
+        <div class="card stat"><span>Medium risk</span><strong id="r-medium">-</strong></div>
+        <div class="card stat"><span>Low risk</span><strong id="r-low">-</strong></div>
+      </div>
+      <div class="note" id="r-note"></div>
+      <div class="card toolbar">
+        <select class="control" id="r-filter"><option value="">All levels</option><option value="HIGH">High only</option><option value="MEDIUM">Medium only</option><option value="LOW">Low only</option></select>
+        <span class="grow"></span>
+        <button class="btn" id="r-refresh"><i data-lucide="refresh-cw" style="width:14px"></i>Refresh</button>
+      </div>
+      <div class="card table-card"><div class="table-wrap"><table>
+        <thead><tr><th>Learner</th><th>Risk</th><th>Warning signs</th><th>Last practice</th><th>Answers (7d)</th><th></th></tr></thead>
+        <tbody id="r-rows"><tr><td colspan="6" class="empty">Loading...</td></tr></tbody>
+      </table></div></div>
+    </section>
+
+    <!-- SEGMENTS -->
+    <section class="panel" id="panel-segments">
+      <div class="card toolbar">
+        <label for="s-k" style="font-size:12px;font-weight:600">Number of groups</label>
+        <select class="control" id="s-k" style="min-width:80px"><option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option></select>
+        <button class="btn primary" id="s-run"><i data-lucide="shapes" style="width:14px"></i>Group learners</button>
+        <span class="grow"></span>
+        <select class="control" id="s-filter"><option value="">All groups</option></select>
+      </div>
+      <div class="note" id="s-note">Groups are found with k-means on practice volume, active days, recency, accuracy and mastery, then named by how each group compares with everyone. Run it to see your learner groups.</div>
+      <div class="seg-grid" id="s-cards"></div>
+      <div class="card table-card" id="s-table-card" style="display:none"><div class="table-wrap"><table>
+        <thead><tr><th>Learner</th><th>Group</th></tr></thead>
+        <tbody id="s-rows"></tbody>
+      </table></div></div>
+    </section>
+
+    <!-- QUALITY -->
+    <section class="panel" id="panel-quality">
+      <div class="stats">
+        <div class="card stat"><span>Questions analysed</span><strong id="q-questions">-</strong></div>
+        <div class="card stat"><span>Learners</span><strong id="q-learners">-</strong></div>
+        <div class="card stat"><span>Answers used</span><strong id="q-responses">-</strong></div>
+        <div class="card stat"><span>Flagged for review</span><strong id="q-flagged">-</strong></div>
+      </div>
+      <div class="note">Difficulty is measured with a Rasch (item response) model from real answers. Flags are prompts for you to look at a question, not verdicts. "Possible wrong key" means stronger learners fail the question more than weaker ones, so check its answer key first.</div>
+      <div class="card toolbar">
+        <label style="font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px"><input type="checkbox" id="q-flagged-only"> Flagged only</label>
+        <span class="grow"></span>
+        <button class="btn primary" id="q-run"><i data-lucide="refresh-cw" style="width:14px"></i>Analyse questions</button>
+      </div>
+      <div class="card table-card"><div class="table-wrap"><table>
+        <thead><tr><th>Question</th><th>Answers</th><th>% correct</th><th>Difficulty</th><th>Discrimination</th><th>Avg time</th><th>Flags</th></tr></thead>
+        <tbody id="q-rows"><tr><td colspan="7" class="empty">Click "Analyse questions" to calibrate the bank.</td></tr></tbody>
+      </table></div></div>
+    </section>
+
+    <!-- MODEL TRAINING -->
+    <section class="panel" id="panel-training">
+      <div class="note"><strong>Fit learning parameters</strong> estimates, for each topic, how fast learners pick things up and how often they guess or slip, using everyone's real answers. Those values are then used for each learner's next answer. A topic needs at least 5 learners with 2 or more answers. Mastery that is already stored is not changed.</div>
+      <div class="card toolbar">
+        <button class="btn primary" id="t-fit"><i data-lucide="sliders-horizontal" style="width:14px"></i>Fit learning parameters</button>
+        <a class="btn" id="t-export" href="#" style="text-decoration:none"><i data-lucide="download" style="width:14px"></i>Download attempts CSV</a>
+      </div>
+      <div class="note">To retrain the recall model on real data, save the CSV as <code>ml-service/attempts.csv</code>, then run <code>python train.py --attempts attempts.csv --dry-run</code> to compare it with the current model. Run it again without <code>--dry-run</code> to replace the model, then restart the ML service. The file contains anonymous ids only, with no names or emails.</div>
+      <div class="card table-card"><div class="table-wrap"><table>
+        <thead><tr><th>Topic</th><th>Learners</th><th>Answers</th><th>Learn</th><th>Guess</th><th>Slip</th><th>Rows updated</th></tr></thead>
+        <tbody id="t-rows"><tr><td colspan="7" class="empty">Click "Fit learning parameters" to run.</td></tr></tbody>
+      </table></div></div>
+      <div class="note" id="t-skipped" style="display:none;margin-top:14px"></div>
+    </section>
+
+    <!-- DRAFTS -->
+    <section class="panel" id="panel-drafts">
+      <div class="note">AI drafts can contain mistakes. Read each question, check the marked answer and the explanation, and only then add it to the question bank.</div>
+      <div class="card toolbar">
+        <select class="control" id="d-subject"><option value="">Select subject</option></select>
+        <select class="control" id="d-topic"><option value="">Select module</option></select>
+        <select class="control" id="d-difficulty" style="min-width:110px"><option value="EASY">Easy</option><option value="MEDIUM" selected>Medium</option><option value="HARD">Hard</option></select>
+        <select class="control" id="d-count" style="min-width:80px"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select>
+        <button class="btn primary" id="d-run"><i data-lucide="wand-sparkles" style="width:14px"></i>Generate drafts</button>
+      </div>
+      <div id="d-results"></div>
+    </section>
+  </main>
+</div>
+
+<div class="overlay" id="nudge-overlay">
+  <div class="modal">
+    <h2>Re-engagement email draft</h2>
+    <div class="sub" style="font-size:11px;color:var(--muted)" id="nudge-to"></div>
+    <label for="nudge-subject">Subject</label>
+    <input class="control" id="nudge-subject">
+    <label for="nudge-body">Message</label>
+    <textarea class="control" id="nudge-body"></textarea>
+    <div class="note" style="margin:14px 0 0">Nothing is sent from here. Edit the draft, then copy it or open it in your email app.</div>
+    <div class="actions">
+      <button class="btn" onclick="closeNudge()">Close</button>
+      <button class="btn" onclick="copyNudge()">Copy</button>
+      <a class="btn primary" id="nudge-mail" href="#" style="text-decoration:none">Open in email app</a>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+  const FLAG_INFO = {
+    TOO_HARD: ['Too hard', 'Fewer than 25% of learners answer it correctly.'],
+    TOO_EASY: ['Too easy', 'Almost everyone (97%+) answers it correctly.'],
+    LOW_DISCRIMINATION: ['Low discrimination', 'Strong and weak learners do about equally well, so it tells us little.'],
+    POSSIBLE_WRONG_KEY: ['Possible wrong key', 'Stronger learners fail it more than weaker ones. Check the answer key.'],
+    SLOW: ['Slow', 'Takes far longer than typical questions. It may be ambiguous or too long.'],
+    LABEL_TOO_EASY: ['Label too easy', 'Labelled easy but measures hard.'],
+    LABEL_TOO_HARD: ['Label too hard', 'Labelled hard but measures easy.']
+  };
+  const loaded = {};
+  let riskRows = [], segmentRows = [], qualityRows = [], drafts = [], topicCache = {}, nudgeTarget = null;
+
+  function icons() { if (window.lucide) lucide.createIcons({ 'stroke-width': 1.8 }); }
+  function session() { try { return JSON.parse(sessionStorage.getItem('sp_current_user') || 'null'); } catch (e) { return null; } }
+  function token() { const s = session(); return s && s.token; }
+  function esc(value) {
+    return String(value == null ? '' : value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+  function $(id) { return document.getElementById(id); }
+  function toast(message) { const el = $('toast'); el.textContent = message; el.classList.add('show'); setTimeout(() => el.classList.remove('show'), 2800); }
+  function q(url) { return url + (url.indexOf('?') >= 0 ? '&' : '?') + 'token=' + encodeURIComponent(token()); }
+  async function api(url, options) {
+    const response = await fetch(url, options);
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.message || 'Request failed.');
+    return data;
+  }
+  function post(url, body) {
+    return api(q(url), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  }
+  function logoutAdmin() { sessionStorage.removeItem('sp_current_user'); location.href = 'login.html'; }
+
+  // ---- tabs ------------------------------------------------------------------------------------
+  function showTab(name) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.getAttribute('data-tab') === name));
+    document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + name));
+    if (name === 'risk' && !loaded.risk) loadRisk();
+    if (name === 'quality' && !loaded.quality) loadQuality();
+    if (name === 'drafts' && !loaded.drafts) loadSubjects();
+    icons();
+  }
+
+  // ---- risk ------------------------------------------------------------------------------------
+  async function loadRisk() {
+    $('r-rows').innerHTML = '<tr><td colspan="6" class="empty">Scoring learners...</td></tr>';
+    try {
+      const data = await api(q('/api/admin/ai/risk'));
+      loaded.risk = true;
+      riskRows = data.learners || [];
+      const s = data.summary || {};
+      $('r-total').textContent = s.learners || 0;
+      $('r-high').textContent = s.high || 0;
+      $('r-medium').textContent = s.medium || 0;
+      $('r-low').textContent = s.low || 0;
+      const model = data.model || {};
+      const metrics = model.metrics || {};
+      let note = data.message || '';
+      if (!note) {
+        const isSynthetic = metrics.source === 'synthetic';
+        const auc = metrics.xgboost && metrics.xgboost.auc;
+        note = String(data.engine || '').indexOf('xgboost') >= 0
+          ? 'Scores come from an XGBoost model' + (isSynthetic ? ' trained on simulated learners' + (auc ? ' (AUC ' + esc(auc) + ' on the simulator)' : '') + '. Those figures show how well it recovers the simulator, not how well it predicts your real students, so use the ranking as a prompt to check in, not as a verdict.' : '.')
+          : 'Scores come from a simple rule-based check because the trained model is not loaded. Use the ranking as a prompt to check in.';
+      }
+      $('r-note').textContent = note;
+      renderRisk();
+    } catch (error) {
+      loaded.risk = false;
+      $('r-rows').innerHTML = '<tr><td colspan="6" class="empty">' + esc(error.message) + '</td></tr>';
+    }
+  }
+  function renderRisk() {
+    const level = $('r-filter').value;
+    const rows = riskRows.filter(r => !level || r.level === level);
+    $('r-rows').innerHTML = rows.length ? rows.map(r => {
+      const pct = Math.round(Number(r.riskScore || 0) * 100);
+      const reasons = (r.reasons || []).map(x => '<li>' + esc(x) + '</li>').join('');
+      const idx = riskRows.indexOf(r);
+      return '<tr><td><strong>' + esc(r.name || 'Unnamed') + '</strong><span class="meta">' + esc(r.email) + '</span></td>' +
+        '<td><span class="pill ' + esc(String(r.level).toLowerCase()) + '">' + esc(r.level) + ' &middot; ' + pct + '%</span></td>' +
+        '<td><ul class="plain">' + reasons + '</ul></td>' +
+        '<td>' + (Number(r.daysSinceLast) === 0 ? 'Today' : esc(r.daysSinceLast) + ' day' + (Number(r.daysSinceLast) === 1 ? '' : 's') + ' ago') + '</td>' +
+        '<td>' + esc(r.attempts7d) + '</td>' +
+        '<td><button class="btn small" data-nudge="' + idx + '">Draft email</button></td></tr>';
+    }).join('') : '<tr><td colspan="6" class="empty">No learners match this filter.</td></tr>';
+    $('r-rows').querySelectorAll('button[data-nudge]').forEach(b => b.addEventListener('click', () => openNudge(riskRows[Number(b.getAttribute('data-nudge'))], b)));
+  }
+  async function openNudge(row, button) {
+    button.disabled = true;
+    const original = button.textContent;
+    button.textContent = 'Writing...';
+    try {
+      const data = await post('/api/admin/ai/nudge', { userId: row.userId });
+      nudgeTarget = data;
+      $('nudge-to').textContent = 'To: ' + (data.name || '') + ' <' + (data.email || '') + '>';
+      $('nudge-subject').value = data.subject || '';
+      $('nudge-body').value = data.body || '';
+      updateMailLink();
+      $('nudge-overlay').classList.add('show');
+    } catch (error) {
+      toast(error.message);
+    } finally {
+      button.disabled = false;
+      button.textContent = original;
+    }
+  }
+  function updateMailLink() {
+    const to = nudgeTarget && nudgeTarget.email ? nudgeTarget.email : '';
+    $('nudge-mail').href = 'mailto:' + encodeURIComponent(to) + '?subject=' + encodeURIComponent($('nudge-subject').value) + '&body=' + encodeURIComponent($('nudge-body').value);
+  }
+  function closeNudge() { $('nudge-overlay').classList.remove('show'); }
+  async function copyNudge() {
+    try { await navigator.clipboard.writeText($('nudge-subject').value + '\n\n' + $('nudge-body').value); toast('Copied to clipboard.'); }
+    catch (e) { toast('Copy failed. Select the text and copy it manually.'); }
+  }
+
+  // ---- segments --------------------------------------------------------------------------------
+  async function runSegments() {
+    const button = $('s-run');
+    button.disabled = true;
+    $('s-cards').innerHTML = '';
+    $('s-note').textContent = 'Grouping learners...';
+    try {
+      const data = await api(q('/api/admin/ai/segments?k=' + encodeURIComponent($('s-k').value)));
+      segmentRows = data.learners || [];
+      const segments = data.segments || [];
+      if (!segments.length) { $('s-note').textContent = data.message || 'Not enough learner activity to form groups yet.'; $('s-table-card').style.display = 'none'; return; }
+      const sil = data.silhouette;
+      $('s-note').textContent = 'Found ' + segments.length + ' group' + (segments.length === 1 ? '' : 's') + '.' +
+        (sil == null ? '' : ' Cluster separation (silhouette) is ' + sil + ': closer to 1 means clearer groups, near 0 means they overlap.');
+      $('s-cards').innerHTML = segments.map(s => {
+        const c = s.centroid || {};
+        return '<div class="card seg"><h3>' + esc(s.name) + '</h3><span class="pill info">' + esc(s.size) + ' learner' + (s.size === 1 ? '' : 's') + ' &middot; ' + Math.round(Number(s.share || 0) * 100) + '%</span>' +
+          '<div class="bar"><i style="width:' + Math.round(Number(s.share || 0) * 100) + '%"></i></div>' +
+          '<p>' + esc(s.description) + '</p>' +
+          '<div class="stat-line"><span>' + esc(c.attempts30d) + ' answers / 30d</span><span>' + esc(c.activeDays14) + ' active days / 14d</span><span>' + esc(c.daysSinceLast) + ' days since last</span><span>' + Math.round(Number(c.accuracy30d || 0) * 100) + '% accuracy</span><span>' + Math.round(Number(c.avgMastery || 0) * 100) + '% mastery</span></div>' +
+          '<div class="action"><strong>Suggested action</strong><p style="margin-top:4px">' + esc(s.recommendedAction) + '</p></div></div>';
+      }).join('');
+      $('s-filter').innerHTML = '<option value="">All groups</option>' + segments.map(s => '<option value="' + esc(s.id) + '">' + esc(s.name) + '</option>').join('');
+      $('s-table-card').style.display = 'block';
+      renderSegmentRows();
+    } catch (error) {
+      $('s-note').textContent = error.message;
+    } finally {
+      button.disabled = false;
+    }
+  }
+  function renderSegmentRows() {
+    const id = $('s-filter').value;
+    const rows = segmentRows.filter(r => !id || String(r.segmentId) === id);
+    $('s-rows').innerHTML = rows.length ? rows.map(r =>
+      '<tr><td><strong>' + esc(r.name || 'Unnamed') + '</strong><span class="meta">' + esc(r.email) + '</span></td><td><span class="pill info">' + esc(r.segmentName) + '</span></td></tr>'
+    ).join('') : '<tr><td colspan="2" class="empty">No learners in this group.</td></tr>';
+  }
+
+  // ---- question quality ------------------------------------------------------------------------
+  async function loadQuality() {
+    const button = $('q-run');
+    button.disabled = true;
+    $('q-rows').innerHTML = '<tr><td colspan="7" class="empty">Calibrating questions...</td></tr>';
+    try {
+      const data = await api(q('/api/admin/ai/question-quality'));
+      loaded.quality = true;
+      const s = data.summary || {};
+      $('q-questions').textContent = s.questions || 0;
+      $('q-learners').textContent = s.learners || 0;
+      $('q-responses').textContent = s.responses || 0;
+      $('q-flagged').textContent = s.flagged || 0;
+      qualityRows = data.questions || [];
+      if (data.insufficientData) {
+        $('q-rows').innerHTML = '<tr><td colspan="7" class="empty">' + esc(data.message) + '</td></tr>';
+        return;
+      }
+      renderQuality();
+    } catch (error) {
+      loaded.quality = false;
+      $('q-rows').innerHTML = '<tr><td colspan="7" class="empty">' + esc(error.message) + '</td></tr>';
+    } finally {
+      button.disabled = false;
+    }
+  }
+  function renderQuality() {
+    const flaggedOnly = $('q-flagged-only').checked;
+    const rows = qualityRows.filter(r => !flaggedOnly || (r.flags && r.flags.length));
+    $('q-rows').innerHTML = rows.length ? rows.map(r => {
+      const flags = (r.flags || []).map(f => {
+        const info = FLAG_INFO[f] || [f, ''];
+        const cls = f === 'POSSIBLE_WRONG_KEY' ? 'bad' : 'warn';
+        return '<span class="pill ' + cls + '" title="' + esc(info[1]) + '">' + esc(info[0]) + '</span>';
+      }).join('');
+      const label = r.labelledDifficulty ? esc(r.labelledDifficulty.toLowerCase()) : 'n/a';
+      return '<tr><td style="max-width:340px"><strong>' + esc(r.prompt || ('Question #' + r.questionId)) + '</strong><span class="meta">#' + esc(r.questionId) + (r.topicName ? ' &middot; ' + esc(r.topicName) : '') + (r.active === false ? ' &middot; disabled' : '') + '</span></td>' +
+        '<td>' + esc(r.responses) + '</td>' +
+        '<td>' + Math.round(Number(r.pCorrect || 0) * 100) + '%</td>' +
+        '<td>Measured <strong style="display:inline">' + esc(String(r.suggestedDifficulty).toLowerCase()) + '</strong><span class="meta">logit ' + esc(r.difficultyLogit) + ' &middot; labelled ' + label + '</span></td>' +
+        '<td>' + esc(r.discrimination) + '</td>' +
+        '<td>' + esc(r.avgSeconds) + 's</td>' +
+        '<td><div class="flags">' + (flags || '<span class="meta">None</span>') + '</div></td></tr>';
+    }).join('') : '<tr><td colspan="7" class="empty">' + (qualityRows.length ? 'No flagged questions. Nice work.' : 'No data.') + '</td></tr>';
+  }
+
+  // ---- AI question drafts ----------------------------------------------------------------------
+  async function loadSubjects() {
+    try {
+      const subjects = await api('/api/practice/subjects');
+      loaded.drafts = true;
+      $('d-subject').innerHTML = '<option value="">Select subject</option>' + subjects.map(s => '<option value="' + esc(s.id) + '">' + esc(s.name) + '</option>').join('');
+    } catch (error) { toast(error.message); }
+  }
+  async function loadTopics() {
+    const id = $('d-subject').value;
+    if (!id) { $('d-topic').innerHTML = '<option value="">Select module</option>'; return; }
+    if (!topicCache[id]) topicCache[id] = await api(q('/api/practice/subjects/' + encodeURIComponent(id) + '/topics'));
+    $('d-topic').innerHTML = '<option value="">Select module</option>' + topicCache[id].map(t => '<option value="' + esc(t.id) + '">' + esc(t.name) + '</option>').join('');
+  }
+  async function generateDrafts() {
+    const topicId = Number($('d-topic').value);
+    if (!topicId) { toast('Select a subject and module first.'); return; }
+    const button = $('d-run');
+    button.disabled = true;
+    $('d-results').innerHTML = '<div class="empty">Writing drafts...</div>';
+    try {
+      const data = await post('/api/admin/ai/generate-questions', { topicId, difficulty: $('d-difficulty').value, count: Number($('d-count').value) });
+      drafts = (data.questions || []).map(d => Object.assign({ topicId: data.topicId, added: false }, d));
+      renderDrafts();
+    } catch (error) {
+      $('d-results').innerHTML = '<div class="empty">' + esc(error.message) + '</div>';
+    } finally {
+      button.disabled = false;
+    }
+  }
+  function renderDrafts() {
+    if (!drafts.length) { $('d-results').innerHTML = '<div class="empty">The AI did not return any usable questions. Try again.</div>'; return; }
+    $('d-results').innerHTML = drafts.map((d, i) =>
+      '<div class="card draft"><h3>' + esc(d.prompt) + '</h3>' +
+      d.options.map((o, k) => '<div class="opt' + (k === d.correctIndex ? ' correct' : '') + '">' + String.fromCharCode(65 + k) + '. ' + esc(o) + (k === d.correctIndex ? ' <strong style="display:inline;color:#57825a">(marked correct)</strong>' : '') + '</div>').join('') +
+      '<div class="expl"><strong style="display:inline">Explanation:</strong> ' + esc(d.explanation) + '</div>' +
+      '<div class="foot"><span class="pill info">' + esc(String(d.difficulty).toLowerCase()) + '</span>' +
+      '<button class="btn primary small" data-add="' + i + '"' + (d.added ? ' disabled' : '') + '>' + (d.added ? 'Added' : 'Add to question bank') + '</button></div></div>'
+    ).join('');
+    $('d-results').querySelectorAll('button[data-add]').forEach(b => b.addEventListener('click', () => addDraft(Number(b.getAttribute('data-add')), b)));
+  }
+  async function addDraft(index, button) {
+    const d = drafts[index];
+    if (!d || d.added) return;
+    button.disabled = true;
+    try {
+      await post('/api/admin/questions', { topicId: d.topicId, difficulty: d.difficulty, prompt: d.prompt, explanation: d.explanation, options: d.options, correctIndex: d.correctIndex });
+      d.added = true;
+      renderDrafts();
+      toast('Question added to the bank.');
+    } catch (error) {
+      button.disabled = false;
+      toast(error.message);
+    }
+  }
+
+  // ---- model training --------------------------------------------------------------------------
+  async function fitBkt() {
+    const button = $('t-fit');
+    button.disabled = true;
+    $('t-rows').innerHTML = '<tr><td colspan="7" class="empty">Fitting... this can take up to a minute.</td></tr>';
+    try {
+      const data = await post('/api/admin/ai/fit-bkt', {});
+      const fitted = data.fitted || [];
+      $('t-rows').innerHTML = fitted.length ? fitted.map(f =>
+        '<tr><td><strong>' + esc(f.topic || ('Topic #' + f.topicId)) + '</strong></td><td>' + esc(f.learners) + '</td><td>' + esc(f.observations) +
+        '</td><td>' + esc(f.pLearn) + '</td><td>' + esc(f.pGuess) + '</td><td>' + esc(f.pSlip) + '</td><td>' + esc(f.rowsUpdated) + '</td></tr>'
+      ).join('') : '<tr><td colspan="7" class="empty">' + esc(data.message || 'Nothing was fitted.') + '</td></tr>';
+      const skipped = data.skipped || [];
+      const box = $('t-skipped');
+      box.style.display = skipped.length ? 'block' : 'none';
+      box.innerHTML = skipped.length ? '<strong>Skipped</strong><ul class="plain" style="margin-top:6px">' +
+        skipped.map(s => '<li>' + esc(s.topic || ('Topic #' + s.topicId)) + ': ' + esc(s.reason) + '</li>').join('') + '</ul>' : '';
+      toast(data.message || 'Done.');
+    } catch (error) {
+      $('t-rows').innerHTML = '<tr><td colspan="7" class="empty">' + esc(error.message) + '</td></tr>';
+    } finally {
+      button.disabled = false;
+    }
+  }
+
+  // ---- start -----------------------------------------------------------------------------------
+  async function init() {
+    const user = session();
+    if (!user || !user.token) { location.href = 'login.html'; return; }
+    try {
+      const me = await api('/api/auth/me?token=' + encodeURIComponent(user.token));
+      sessionStorage.setItem('sp_current_user', JSON.stringify(me));
+      if (me.role !== 'ADMIN') throw new Error('Administrator access is required.');
+    } catch (error) {
+      $('main').innerHTML = '<div class="card empty"><h2>Access unavailable</h2><p style="margin-top:8px">' + esc(error.message) + '</p><a class="btn" style="margin-top:16px;text-decoration:none" href="dashboard.html">Back to dashboard</a></div>';
+      icons();
+      return;
+    }
+    document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => showTab(t.getAttribute('data-tab'))));
+    $('r-filter').addEventListener('change', renderRisk);
+    $('r-refresh').addEventListener('click', loadRisk);
+    $('s-run').addEventListener('click', runSegments);
+    $('s-filter').addEventListener('change', renderSegmentRows);
+    $('q-run').addEventListener('click', loadQuality);
+    $('q-flagged-only').addEventListener('change', renderQuality);
+    $('d-subject').addEventListener('change', loadTopics);
+    $('d-run').addEventListener('click', generateDrafts);
+    $('t-fit').addEventListener('click', fitBkt);
+    $('t-export').href = q('/api/admin/ai/export-attempts.csv');
+    $('nudge-subject').addEventListener('input', updateMailLink);
+    $('nudge-body').addEventListener('input', updateMailLink);
+    loadRisk();
+    icons();
+  }
+  init();
+</script>
+</body>
+</html>

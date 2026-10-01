@@ -1,0 +1,43 @@
+# ---- Secrets: never commit these ---------------------------------------------------
+.env
+*.env
+!.env.example
+ml-service/.env
+application-local.properties
+application-secret.properties
+
+# ---- Java / Maven build output ----------------------------------------------------
+target/
+*.class
+*.jar
+*.war
+!.mvn/wrapper/maven-wrapper.jar
+hs_err_pid*
+
+# ---- Python (ml-service) ----------------------------------------------------------
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+ml-service/.pytest_cache/
+
+# Trained models are rebuilt automatically on first start (AUTO_TRAIN=true)
+ml-service/models/
+
+# Real student activity exported for retraining: keep it out of git
+attempts.csv
+ml-service/attempts.csv
+*.attempts.csv
+
+# ---- Editors / OS -----------------------------------------------------------------
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db
+
+# ---- Logs and scratch -------------------------------------------------------------
+*.log
+logs/

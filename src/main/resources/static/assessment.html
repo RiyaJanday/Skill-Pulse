@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SkillPulse Assessment</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream:#f5ede4;
+    --warm-white:#faf6f2;
+    --card-bg:rgba(255,255,255,.74);
+    --card-border:rgba(180,130,110,.16);
+    --sidebar-act:#8c6b5c;
+    --text-dark:#3a2a22;
+    --text-mid:#7a5c52;
+    --text-light:#b09080;
+    --green:#7aab7a;
+    --danger:#d4685a;
+    --gold:#d4aa5a;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body {
+    font-family:'DM Sans',sans-serif;
+    background:var(--cream);
+    color:var(--text-dark);
+    min-height:100vh;
+    overflow:hidden;
+  }
+  body::before {
+    content:'';
+    position:fixed;
+    inset:0;
+    background:
+      radial-gradient(ellipse 520px 360px at 84% 16%, rgba(210,160,130,.13), transparent 70%),
+      radial-gradient(ellipse 360px 460px at 8% 76%, rgba(180,120,100,.09), transparent 70%);
+    pointer-events:none;
+  }
+  .topbar {
+    position:relative;
+    z-index:2;
+    height:66px;
+    padding:0 28px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    background:rgba(180,130,110,.22);
+    border-bottom:1px solid var(--card-border);
+    backdrop-filter:blur(12px);
+  }
+  .brand { display:flex; align-items:center; gap:12px; }
+  .mark {
+    width:36px;
+    height:36px;
+    border-radius:11px;
+    background:linear-gradient(135deg,#e8c97a,#d4aa5a);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    color:#7a5010;
+  }
+  .brand-title { font-weight:700; }
+  .brand-sub { color:var(--text-light); font-size:12px; margin-top:2px; }
+  .layout {
+    position:relative;
+    z-index:1;
+    height:calc(100vh - 66px);
+    display:grid;
+    grid-template-columns:minmax(0,1fr) 320px;
+    gap:24px;
+    padding:28px;
+    max-width:1280px;
+    margin:0 auto;
+  }
+  .main-card,
+  .side-card {
+    background:var(--card-bg);
+    border:1px solid var(--card-border);
+    border-radius:18px;
+    box-shadow:0 2px 14px rgba(140,100,80,.07);
+    backdrop-filter:blur(10px);
+  }
+  .main-card {
+    min-height:0;
+    display:flex;
+    flex-direction:column;
+  }
+  .question-head {
+    padding:28px 32px 20px;
+    border-bottom:1px solid var(--card-border);
+  }
+  h1 { font-family:'Fraunces',serif; font-size:30px; font-weight:500; }
+  .instruction { color:var(--text-light); font-size:13px; margin-top:6px; }
+  .progress-track {
+    height:5px;
+    background:rgba(180,130,110,.12);
+    border-radius:99px;
+    overflow:hidden;
+    margin-top:20px;
+  }
+  .progress-fill {
+    height:100%;
+    width:0;
+    background:var(--sidebar-act);
+    border-radius:99px;
+    transition:width .2s;
+  }
+  .question-body {
+    padding:30px 32px;
+    overflow:auto;
+    flex:1;
+  }
+  .meta {
+    display:inline-flex;
+    border-radius:99px;
+    background:rgba(140,107,92,.1);
+    color:var(--text-mid);
+    padding:5px 11px;
+    font-size:11px;
+    font-weight:700;
+    margin-bottom:18px;
+  }
+  .prompt {
+    font-size:22px;
+    line-height:1.38;
+    font-weight:700;
+    margin-bottom:24px;
+  }
+  .option {
+    display:flex;
+    gap:14px;
+    align-items:center;
+    width:100%;
+    text-align:left;
+    padding:16px 18px;
+    margin:12px 0;
+    border:1.5px solid var(--card-border);
+    border-radius:14px;
+    background:rgba(255,255,255,.48);
+    cursor:pointer;
+    color:var(--text-dark);
+    font-family:'DM Sans',sans-serif;
+    font-size:15px;
+    transition:all .18s;
+  }
+  .option:hover,
+  .option.selected {
+    border-color:var(--sidebar-act);
+    background:rgba(140,107,92,.09);
+  }
+  .option.correct { border-color:var(--green); background:rgba(122,171,122,.16); }
+  .option.wrong { border-color:var(--danger); background:rgba(212,104,90,.13); }
+  .letter {
+    width:32px;
+    height:32px;
+    border-radius:9px;
+    background:rgba(140,107,92,.11);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:700;
+    flex-shrink:0;
+  }
+  .feedback {
+    color:var(--text-mid);
+    font-size:14px;
+    line-height:1.5;
+    margin-top:18px;
+    min-height:22px;
+  }
+  .actions {
+    padding:20px 32px 28px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+    border-top:1px solid var(--card-border);
+  }
+  .btn {
+    padding:10px 18px;
+    border-radius:11px;
+    border:1.5px solid var(--card-border);
+    background:var(--warm-white);
+    color:var(--text-dark);
+    cursor:pointer;
+    font-family:'DM Sans',sans-serif;
+    font-weight:700;
+  }
+  .btn:hover { background:var(--sidebar-act); color:#fff; border-color:transparent; }
+  .btn:disabled { opacity:.45; cursor:not-allowed; }
+  .btn-primary { background:var(--sidebar-act); color:#fff; border-color:transparent; }
+  .btn-submit { background:var(--green); color:#fff; border-color:transparent; box-shadow:0 12px 24px rgba(122,171,122,.26); }
+  .side { display:flex; flex-direction:column; gap:18px; min-height:0; }
+  .side-card { padding:22px 24px; }
+  .side-title { font-size:15px; font-weight:800; margin-bottom:14px; }
+  .status-row {
+    display:flex;
+    justify-content:space-between;
+    color:var(--text-mid);
+    font-size:14px;
+    margin:12px 0;
+  }
+  .status-row strong { color:var(--text-dark); }
+  .timer-value { font-variant-numeric:tabular-nums; color:var(--sidebar-act) !important; }
+  .timer-value.urgent { color:var(--danger) !important; animation:timerPulse 1s ease-in-out infinite; }
+  @keyframes timerPulse { 50% { opacity:.48; } }
+  .map {
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:8px;
+    max-height:310px;
+    overflow:auto;
+    padding-right:4px;
+  }
+  .map-btn {
+    height:44px;
+    border:none;
+    border-radius:10px;
+    background:rgba(140,107,92,.09);
+    color:var(--text-dark);
+    cursor:pointer;
+    font-weight:700;
+  }
+  .map-btn.current { outline:2px solid var(--sidebar-act); background:rgba(140,107,92,.14); }
+  .map-btn.answered { background:rgba(122,171,122,.2); color:#416d41; }
+  .map-btn.review { background:rgba(212,170,90,.22); color:#805c1f; }
+  .lock-note {
+    color:var(--text-light);
+    font-size:12px;
+    line-height:1.45;
+  }
+  .overlay {
+    position:fixed;
+    inset:0;
+    z-index:10;
+    background:rgba(46,33,24,.55);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    backdrop-filter:blur(8px);
+  }
+  .overlay.show { display:flex; }
+  .modal {
+    max-width:480px;
+    background:var(--warm-white);
+    border:1px solid var(--card-border);
+    border-radius:20px;
+    padding:28px;
+    box-shadow:0 24px 80px rgba(46,33,24,.25);
+  }
+  .modal h2 { font-family:'Fraunces',serif; font-size:28px; font-weight:500; margin-bottom:10px; }
+  .modal p { color:var(--text-mid); line-height:1.5; margin-bottom:18px; }
+  .summary {
+    display:none;
+    background:rgba(122,171,122,.12);
+    border:1px solid rgba(122,171,122,.28);
+    border-radius:14px;
+    padding:16px;
+    margin-top:16px;
+    color:var(--text-mid);
+  }
+  .review-list {
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+  }
+  .review-card {
+    background:rgba(255,255,255,.56);
+    border:1px solid var(--card-border);
+    border-radius:16px;
+    padding:18px;
+  }
+  .review-card.correct-card { border-color:rgba(122,171,122,.42); }
+  .review-card.wrong-card { border-color:rgba(212,104,90,.42); }
+  .review-option {
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:12px 14px;
+    border:1px solid var(--card-border);
+    border-radius:12px;
+    margin:8px 0;
+    background:rgba(255,255,255,.45);
+  }
+  .review-option.correct-option {
+    border-color:var(--green);
+    background:rgba(122,171,122,.16);
+  }
+  .review-option.wrong-option {
+    border-color:var(--danger);
+    background:rgba(212,104,90,.13);
+  }
+  .tag {
+    margin-left:auto;
+    border-radius:99px;
+    padding:4px 9px;
+    font-size:11px;
+    font-weight:700;
+    white-space:nowrap;
+  }
+  .tag.correct-tag { background:rgba(122,171,122,.2); color:#416d41; }
+  .tag.wrong-tag { background:rgba(212,104,90,.16); color:#b84d40; }
+  .explanation-box {
+    margin-top:12px;
+    padding:12px 14px;
+    border-radius:12px;
+    background:rgba(140,107,92,.08);
+    color:var(--text-mid);
+    line-height:1.45;
+    font-size:14px;
+  }
+  .ai-explain-btn { margin-top:12px; padding:8px 14px; font-size:13px; }
+  .ai-explain { margin-top:12px; }
+  .ai-box { padding:14px 16px; border-radius:12px; background:rgba(155,116,100,.09); border:1px solid var(--card-border); color:var(--text-mid); font-size:14px; line-height:1.55; }
+  .ai-box p { margin:0 0 10px; }
+  .ai-box p:last-of-type { margin-bottom:0; }
+  .ai-box b { color:var(--text-dark); }
+  .ai-note { margin-top:10px; font-size:11px; color:var(--text-light); }
+  .ai-error { padding:10px 14px; border-radius:12px; background:rgba(212,104,90,.12); color:#b84d40; font-size:13px; }
+  @media (max-width:900px) {
+    body { overflow:auto; }
+    .layout { height:auto; grid-template-columns:1fr; padding:18px; }
+    .side { order:-1; }
+  }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="brand">
+    <div class="mark">SP</div>
+    <div>
+      <div class="brand-title">SkillPulse Assessment</div>
+      <div class="brand-sub" id="subject-name">Loading assessment</div>
+    </div>
+  </div>
+  <button class="btn" onclick="confirmQuit()">Quit Test</button>
+</div>
+
+<div class="layout">
+  <main class="main-card">
+    <div class="question-head">
+      <h1 id="title">Assessment</h1>
+      <div class="instruction" id="instruction">Loading questions...</div>
+      <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+    </div>
+    <div class="question-body" id="question-body"></div>
+    <div class="actions">
+      <button class="btn" id="prev-btn" onclick="goToQuestion(currentIndex - 1)">Previous</button>
+      <button class="btn" id="review-btn" onclick="toggleReview()">Mark Review</button>
+      <button class="btn btn-primary" id="next-btn" onclick="goToQuestion(currentIndex + 1)">Next</button>
+      <button class="btn btn-submit" id="submit-btn" onclick="submitTest()" style="display:none">Submit Test</button>
+    </div>
+  </main>
+
+  <aside class="side">
+    <div class="side-card">
+      <div class="side-title">Test Status</div>
+      <div class="status-row"><span>Time Remaining</span><strong class="timer-value" id="timer-value">--:--</strong></div>
+      <div class="status-row"><span>Answered</span><strong><span id="answered-count">0</span>/<span id="total-count">0</span></strong></div>
+      <div class="status-row"><span>Marked Review</span><strong id="review-count">0</strong></div>
+      <div class="status-row"><span>Warnings</span><strong id="warning-count">0</strong></div>
+      <div class="summary" id="summary"></div>
+    </div>
+    <div class="side-card">
+      <div class="side-title">Question Map</div>
+      <div class="map" id="question-map"></div>
+    </div>
+    <div class="side-card">
+      <div class="side-title">Screen Lock</div>
+      <div class="lock-note">Test mode uses fullscreen and warns when the tab loses focus or fullscreen is exited. Browsers do not allow a website to fully lock the operating system screen.</div>
+      <button class="btn btn-primary" style="width:100%;margin-top:14px" onclick="enterLockMode()">Resume Lock Mode</button>
+    </div>
+  </aside>
+</div>
+
+<div class="overlay show" id="start-lock">
+  <div class="modal">
+    <h2>Start Locked Test</h2>
+    <p>This assessment will open in fullscreen mode. Avoid switching tabs or exiting fullscreen while attempting the test.</p>
+    <button class="btn btn-primary" onclick="startLockedTest()">Start Test</button>
+  </div>
+</div>
+
+<div class="overlay" id="lock-warning">
+  <div class="modal">
+    <h2>Screen Lock Paused</h2>
+    <p>The test detected that fullscreen mode was exited or the assessment tab lost focus. Resume lock mode to continue.</p>
+    <button class="btn btn-primary" onclick="resumeFromWarning()">Resume Test</button>
+  </div>
+</div>
+
+<script>
+  let assessment = null;
+  let currentIndex = 0;
+  let answers = {};
+  let review = {};
+  let submitted = false;
+  let warnings = 0;
+  let lockStarted = false;
+  let questionStartedAt = Date.now();
+  let results = {};
+  let timerInterval = null;
+  let remainingSeconds = 0;
+  let timerStarted = false;
+  let autoSubmitted = false;
+  const letters = ['A', 'B', 'C', 'D'];
+
+  function currentToken() {
+    try {
+      const stored = sessionStorage.getItem('sp_current_user');
+      return stored ? JSON.parse(stored).token : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function subjectId() {
+    return new URLSearchParams(window.location.search).get('subjectId');
+  }
+
+  function topicId() {
+    return new URLSearchParams(window.location.search).get('topicId');
+  }
+
+  function isMistakeReview() {
+    return new URLSearchParams(window.location.search).get('review') === 'mistakes';
+  }
+
+  function formatTimer(seconds) {
+    const minutes = Math.floor(Math.max(0, seconds) / 60);
+    const remainder = Math.max(0, seconds) % 60;
+    return String(minutes).padStart(2, '0') + ':' + String(remainder).padStart(2, '0');
+  }
+
+  function updateTimerDisplay() {
+    const timer = document.getElementById('timer-value');
+    if (!timer) return;
+    timer.textContent = formatTimer(remainingSeconds);
+    timer.classList.toggle('urgent', remainingSeconds <= 60 && !submitted);
+  }
+
+  function startAssessmentTimer() {
+    if (!assessment || timerStarted || submitted) return;
+    timerStarted = true;
+    remainingSeconds = Number(assessment.timeLimitSeconds || assessment.questions.length * 60 || 900);
+    updateTimerDisplay();
+    timerInterval = window.setInterval(() => {
+      if (submitted) {
+        window.clearInterval(timerInterval);
+        return;
+      }
+      remainingSeconds--;
+      updateTimerDisplay();
+      if (remainingSeconds <= 0) {
+        window.clearInterval(timerInterval);
+        autoSubmitted = true;
+        submitTest(true);
+      }
+    }, 1000);
+  }
+
+  async function resolveSubjectId() {
+    const id = subjectId();
+    const response = await fetch('/api/practice/subjects');
+    const subjects = await response.json().catch(() => []);
+    if (!response.ok || !subjects.length) {
+      throw new Error('No subjects are available for assessment yet.');
+    }
+    if (id && id !== 'undefined' && id !== 'null') {
+      const found = subjects.find(subject => String(subject.id) === String(id));
+      if (found) {
+        return found.id;
+      }
+    }
+    return subjects[0].id;
+  }
+
+  async function enterLockMode() {
+    try {
+      if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+        await document.documentElement.requestFullscreen();
+      }
+    } catch (e) {}
+  }
+
+  async function startLockedTest() {
+    lockStarted = true;
+    document.getElementById('start-lock').classList.remove('show');
+    await enterLockMode();
+    startAssessmentTimer();
+  }
+
+  async function resumeFromWarning() {
+    document.getElementById('lock-warning').classList.remove('show');
+    await enterLockMode();
+  }
+
+  function registerWarning() {
+    if (!lockStarted || submitted) return;
+    warnings++;
+    document.getElementById('warning-count').textContent = warnings;
+    document.getElementById('lock-warning').classList.add('show');
+  }
+
+  document.addEventListener('fullscreenchange', () => {
+    if (lockStarted && !submitted && !document.fullscreenElement) registerWarning();
+  });
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) registerWarning();
+  });
+
+  window.addEventListener('blur', () => {
+    setTimeout(() => {
+      if (document.hidden) registerWarning();
+    }, 150);
+  });
+
+  window.addEventListener('beforeunload', event => {
+    if (!submitted && assessment) {
+      event.preventDefault();
+      event.returnValue = '';
+    }
+  });
+
+  function confirmQuit() {
+    if (submitted || confirm('Quit this test? Your unsubmitted answers will not be saved.')) {
+      submitted = true;
+      window.location.href = '/dashboard.html#plan';
+    }
+  }
+
+  function selectOption(questionId, optionId) {
+    if (submitted) return;
+    answers[questionId] = {
+      optionId,
+      timeTakenSeconds: Math.max(1, Math.round((Date.now() - questionStartedAt) / 1000))
+    };
+    updateStatus();
+    renderQuestion();
+  }
+
+  function toggleReview() {
+    if (!assessment) return;
+    const question = assessment.questions[currentIndex];
+    review[question.id] = !review[question.id];
+    updateStatus();
+    renderQuestion();
+  }
+
+  function goToQuestion(index) {
+    if (!assessment || index < 0 || index >= assessment.questions.length) return;
+    currentIndex = index;
+    questionStartedAt = Date.now();
+    renderQuestion();
+  }
+
+  function updateStatus() {
+    const total = assessment ? assessment.questions.length : 0;
+    const answered = Object.keys(answers).length;
+    const marked = Object.keys(review).filter(id => review[id]).length;
+    document.getElementById('answered-count').textContent = answered;
+    document.getElementById('total-count').textContent = total;
+    document.getElementById('review-count').textContent = marked;
+    document.getElementById('progress-fill').style.width = total ? ((answered / total) * 100) + '%' : '0';
+    renderMap();
+  }
+
+  function renderMap() {
+    if (!assessment) return;
+    document.getElementById('question-map').innerHTML = assessment.questions.map((question, index) => {
+      const classes = ['map-btn'];
+      if (index === currentIndex) classes.push('current');
+      if (answers[question.id]) classes.push('answered');
+      if (review[question.id]) classes.push('review');
+      return `<button class="${classes.join(' ')}" onclick="goToQuestion(${index})">${index + 1}</button>`;
+    }).join('');
+  }
+
+  function renderQuestion() {
+    const question = assessment.questions[currentIndex];
+    const selected = answers[question.id] ? answers[question.id].optionId : null;
+    document.getElementById('question-body').innerHTML = `
+      <div class="meta">${question.difficulty} - Question ${currentIndex + 1} of ${assessment.questions.length}</div>
+      <div class="prompt">${question.prompt}</div>
+      ${question.options.map((option, index) => `
+        <button class="option ${selected === option.id ? 'selected' : ''}" onclick="selectOption(${question.id}, ${option.id})">
+          <span class="letter">${letters[index] || index + 1}</span>
+          <span>${option.text}</span>
+        </button>
+      `).join('')}
+      <div class="feedback" id="feedback-${question.id}">${submitted && question.feedback ? question.feedback : ''}</div>
+    `;
+    document.getElementById('prev-btn').disabled = currentIndex === 0;
+    document.getElementById('next-btn').style.display = currentIndex === assessment.questions.length - 1 ? 'none' : 'inline-block';
+    document.getElementById('submit-btn').style.display = currentIndex === assessment.questions.length - 1 ? 'inline-block' : 'none';
+    document.getElementById('review-btn').textContent = review[question.id] ? 'Unmark Review' : 'Mark Review';
+    updateStatus();
+  }
+
+  function optionReviewClass(question, option) {
+    const result = results[question.id];
+    const selectedId = answers[question.id] ? answers[question.id].optionId : null;
+    if (!result) return '';
+    if (option.id === result.correctOptionId) return 'correct-option';
+    if (option.id === selectedId && option.id !== result.correctOptionId) return 'wrong-option';
+    return '';
+  }
+
+  function optionReviewTag(question, option) {
+    const result = results[question.id];
+    const selectedId = answers[question.id] ? answers[question.id].optionId : null;
+    if (!result) return '';
+    if (option.id === result.correctOptionId && option.id === selectedId) return '<span class="tag correct-tag">Your answer · Correct</span>';
+    if (option.id === result.correctOptionId) return '<span class="tag correct-tag">Correct answer</span>';
+    if (option.id === selectedId) return '<span class="tag wrong-tag">Your answer</span>';
+    return '';
+  }
+
+  function renderReviewSummary(correct, total) {
+    const percent = Math.round((correct / total) * 100);
+    document.getElementById('question-body').innerHTML = `
+      <div class="meta">Test Summary</div>
+      <div class="prompt">You scored ${correct}/${total} (${percent}%).</div>
+      <div class="review-list">
+        ${assessment.questions.map((question, index) => {
+          const result = results[question.id];
+          const isCorrect = result && result.correct;
+          return `
+            <div class="review-card ${isCorrect ? 'correct-card' : 'wrong-card'}">
+              <div class="meta">${question.difficulty} - Question ${index + 1}</div>
+              <div class="prompt" style="font-size:18px;margin-bottom:14px">${question.prompt}</div>
+              ${question.options.map((option, optionIndex) => `
+                <div class="review-option ${optionReviewClass(question, option)}">
+                  <span class="letter">${letters[optionIndex] || optionIndex + 1}</span>
+                  <span>${option.text}</span>
+                  ${optionReviewTag(question, option)}
+                </div>
+              `).join('')}
+              <div class="explanation-box"><strong>Explanation:</strong> ${result ? result.explanation : 'Not answered.'}</div>
+              ${answers[question.id] && result && result.correctOptionId ? `<button class="btn ai-explain-btn" onclick="explainWithAi(${question.id}, ${answers[question.id].optionId}, this)">Explain with AI</button><div class="ai-explain" id="ai-explain-${question.id}"></div>` : ''}
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+    document.getElementById('prev-btn').style.display = 'none';
+    document.getElementById('next-btn').style.display = 'none';
+    document.getElementById('review-btn').style.display = 'none';
+    document.getElementById('submit-btn').style.display = 'none';
+  }
+
+  async function submitTest(isAutomatic) {
+    if (!assessment || submitted) return;
+    const total = assessment.questions.length;
+    const answered = Object.keys(answers).length;
+    if (!isAutomatic && answered < total && !confirm(`You answered ${answered} of ${total} questions. Submit anyway?`)) return;
+
+    submitted = true;
+    if (timerInterval) window.clearInterval(timerInterval);
+    let correct = 0;
+    const token = currentToken();
+
+    for (const question of assessment.questions) {
+      const answer = answers[question.id];
+      if (!answer) {
+        results[question.id] = {
+          correct: false,
+          explanation: 'Not answered. Review this concept and attempt it again.'
+        };
+        continue;
+      }
+      const response = await fetch('/api/practice/attempts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          token,
+          questionId: question.id,
+          selectedOptionId: answer.optionId,
+          timeTakenSeconds: answer.timeTakenSeconds || 1
+        })
+      });
+      const data = await response.json().catch(() => ({}));
+      if (response.ok && data.correct) correct++;
+      results[question.id] = {
+        correct: Boolean(data.correct),
+        explanation: response.ok ? data.explanation : (data.message || 'Could not submit this answer.'),
+        correctOptionId: data.correctOptionId,
+        correctOptionText: data.correctOptionText
+      };
+    }
+
+    const percent = Math.round((correct / total) * 100);
+    const summary = document.getElementById('summary');
+    summary.style.display = 'block';
+    const passed = percent >= (assessment.requiredScore || 80);
+    const outcome = assessment.reviewMode
+      ? `${correct} mistake${correct === 1 ? '' : 's'} corrected. Correct answers are removed from your review queue.`
+      : passed ? 'Module passed. The next module is now unlocked.' : 'Score at least 80% to unlock the next module.';
+    summary.innerHTML = `<strong>${isAutomatic ? 'Time expired. Test submitted automatically.' : 'Test submitted.'}</strong><br>${correct}/${total} correct (${percent}%). ${outcome}`;
+    document.getElementById('submit-btn').disabled = true;
+    document.getElementById('next-btn').style.display = 'none';
+    document.getElementById('review-btn').disabled = true;
+    await exitFullscreenAfterSubmit();
+    renderReviewSummary(correct, total);
+  }
+
+  function aiEscape(value) {
+    return String(value == null ? '' : value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  async function explainWithAi(questionId, optionId, button) {
+    const box = document.getElementById('ai-explain-' + questionId);
+    if (!box || button.disabled) return;
+    button.disabled = true;
+    button.textContent = 'Thinking...';
+    try {
+      const response = await fetch('/api/ai/tutor/explain?token=' + encodeURIComponent(currentToken() || ''), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ questionId, selectedOptionId: optionId })
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.message || 'The AI tutor is unavailable right now.');
+      const parts = [];
+      if (data.whyWrong) parts.push('<p><b>Why that answer missed:</b> ' + aiEscape(data.whyWrong) + '</p>');
+      parts.push('<p><b>Why the right answer works:</b> ' + aiEscape(data.whyCorrect) + '</p>');
+      parts.push('<p><b>Remember it:</b> ' + aiEscape(data.memoryTip) + '</p>');
+      if (data.tryNext) parts.push('<p><b>Try next:</b> ' + aiEscape(data.tryNext) + '</p>');
+      box.innerHTML = '<div class="ai-box">' + parts.join('') + '<div class="ai-note">AI-generated. If it disagrees with the reference explanation above, trust the reference.</div></div>';
+      button.style.display = 'none';
+    } catch (error) {
+      box.innerHTML = '<div class="ai-error">' + aiEscape(error.message) + '</div>';
+      button.disabled = false;
+      button.textContent = 'Try again';
+    }
+  }
+
+  async function exitFullscreenAfterSubmit() {
+    try {
+      if (document.fullscreenElement && document.exitFullscreen) await document.exitFullscreen();
+    } catch (e) {}
+  }
+
+  async function loadAssessment() {
+    if (!currentToken()) {
+      window.location.href = '/login.html';
+      return;
+    }
+    const token = currentToken();
+    const mistakeReview = isMistakeReview();
+    let id = null;
+    if (!mistakeReview) {
+      try {
+        id = await resolveSubjectId();
+      } catch (error) {
+        document.getElementById('question-body').innerHTML =
+          '<div class="feedback">' + error.message + '</div>';
+        return;
+      }
+    }
+    const rawModuleId = topicId();
+    const moduleId = rawModuleId && /^\d+$/.test(rawModuleId) ? rawModuleId : null;
+    let response = mistakeReview
+      ? await fetch('/api/practice/review/mistakes?limit=15&token=' + encodeURIComponent(token))
+      : moduleId
+      ? await fetch('/api/practice/topics/' + encodeURIComponent(moduleId) + '/assessment?token=' + encodeURIComponent(token))
+      : await fetch('/api/practice/subjects/' + encodeURIComponent(id)
+        + '/assessment?limit=15&token=' + encodeURIComponent(token));
+    let data = await response.json().catch(() => ({}));
+    if (!response.ok && token && !moduleId) {
+      response = await fetch('/api/practice/subjects/' + encodeURIComponent(id) + '/assessment?limit=15');
+      data = await response.json().catch(() => ({}));
+    }
+    if (!response.ok) {
+      document.getElementById('question-body').innerHTML =
+        '<div class="feedback">' + (data.message || 'Unable to load assessment.') + '</div>';
+      return;
+    }
+    if (!data.questions || !data.questions.length) {
+      document.getElementById('question-body').innerHTML =
+        `<div class="feedback">${mistakeReview ? 'Your mistake queue is clear. Complete more assessments or return to the Practice Plan.' : 'This subject does not have assessment questions yet. Restart Spring Boot once so the question bank can be seeded.'}</div>`;
+      document.getElementById('start-lock').classList.remove('show');
+      return;
+    }
+
+    assessment = data;
+    document.getElementById('title').textContent = data.title;
+    document.getElementById('instruction').textContent = data.instruction;
+    document.getElementById('subject-name').textContent = data.topicName ? `${data.subjectName} / ${data.topicName}` : data.subjectName;
+    updateStatus();
+    renderQuestion();
+    if (lockStarted) startAssessmentTimer();
+  }
+
+  loadAssessment();
+</script>
+</body>
+</html>

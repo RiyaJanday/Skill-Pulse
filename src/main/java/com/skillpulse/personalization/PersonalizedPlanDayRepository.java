@@ -1,0 +1,2 @@
+package com.skillpulse.personalization; import org.springframework.data.jpa.repository.JpaRepository; import java.time.LocalDate; import java.util.*;
+public interface PersonalizedPlanDayRepository extends JpaRepository<PersonalizedPlanDay,Long>{List<PersonalizedPlanDay> findByPlanUserIdAndTargetDateLessThanEqual(Long userId,LocalDate date);List<PersonalizedPlanDay> findByPlanUserIdAndTargetDate(Long userId,LocalDate date);}

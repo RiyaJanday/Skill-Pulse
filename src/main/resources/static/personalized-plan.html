@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>My Plan | SkillPulse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js" defer></script>
+<style>
+:root{--navy:#3a2a22;--navy-soft:#4a372f;--primary:#9b7464;--primary-dark:#805e50;--primary-soft:#f1e6df;--surface:#fffaf7;--canvas:#f5ede4;--line:#eadbd2;--ink:#3a2a22;--muted:#8a7167;--success:#6f9d6d;--success-soft:#edf6eb;--danger:#c95f53;--danger-soft:#fae9e6;--warning:#b8862b;--warning-soft:#fbf2df;--shadow:0 8px 24px rgba(140,100,80,.1)}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:"DM Sans",sans-serif;color:var(--ink);background:var(--canvas)}button,input,select{font:inherit}a{color:inherit;text-decoration:none}.app{display:flex;min-height:100vh}
+.sidebar{position:fixed;inset:0 auto 0 0;width:224px;padding:20px 14px;color:#fff;background:var(--navy)}.brand{display:flex;align-items:center;gap:10px;padding:0 10px 18px;font-size:17px;font-weight:600}.brand-logo{width:30px;height:30px;border-radius:7px;object-fit:cover}.profile{padding:16px 12px;margin-bottom:18px;text-align:center;border-radius:9px;background:var(--navy-soft)}.avatar{display:grid;place-items:center;overflow:hidden;width:52px;height:52px;margin:0 auto 9px;font-weight:700;color:#fff;border:2px solid #ffffffc7;border-radius:50%;background:#d2a35c}.avatar img{width:100%;height:100%;object-fit:cover}.profile p{margin:0;font-size:14px;font-weight:600}.profile small{color:#cfbeb5;font-size:11px}.nav-label{padding:0 10px 7px;color:#ad9990;font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase}.nav{display:grid;gap:5px}.nav-item{display:flex;align-items:center;gap:11px;min-height:42px;padding:0 12px;border-radius:8px;color:#ddd0ca;font-size:13px;font-weight:500}.nav-item:hover{color:#fff;background:#ffffff0f}.nav-item.active{color:#fff;background:var(--primary)}.nav-item svg{width:17px}
+.main{width:calc(100% - 224px);margin-left:224px;padding:28px 32px 42px}.inner{max-width:1100px;margin:auto}
+.page-header{margin-bottom:20px}.eyebrow{display:flex;align-items:center;gap:7px;margin-bottom:6px;color:var(--primary);font-size:12px;font-weight:700;letter-spacing:.8px;text-transform:uppercase}.eyebrow svg{width:15px}h1{margin:0;font-size:26px;letter-spacing:-.5px}.subtitle{max-width:680px;margin:7px 0 0;color:var(--muted);font-size:14px;line-height:1.6}
+.card{margin-bottom:18px;padding:22px;border:1px solid var(--line);border-radius:9px;background:var(--surface);box-shadow:var(--shadow)}h2{margin:0;font-size:17px}h3{margin:0;font-size:14px}.description{margin:4px 0 0;color:var(--muted);font-size:12px}
+.overview{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:20px;align-items:center}.overview p.sum{margin:8px 0 12px;font-size:14px;line-height:1.6;color:#59453c}
+.chips{display:flex;flex-wrap:wrap;gap:8px}.chip{padding:4px 10px;color:var(--primary-dark);border-radius:20px;background:var(--primary-soft);font-size:11px;font-weight:600}.chip.plain{background:#fff;border:1px solid var(--line);color:var(--muted)}
+.progress-box{padding:16px;border-radius:9px;background:#fff;border:1px solid var(--line)}.progress-box strong{display:block;font-size:26px}.progress-box span{font-size:12px;color:var(--muted)}.bar{height:8px;margin-top:10px;border-radius:99px;background:rgba(155,116,100,.15);overflow:hidden}.bar i{display:block;height:100%;border-radius:99px;background:var(--success);transition:width .3s}
+.today{border:2px solid var(--primary);background:#fff}.today-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:6px}.today .label{display:inline-block;margin-bottom:6px;padding:3px 9px;border-radius:20px;background:var(--primary);color:#fff;font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase}.today .objective{margin:6px 0 14px;font-size:13px;color:#59453c;line-height:1.55}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}.button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:38px;padding:0 15px;border:1px solid transparent;border-radius:7px;cursor:pointer;font-size:12px;font-weight:700}.button svg{width:15px}.primary{color:#fff;background:var(--primary)}.primary:hover{background:var(--primary-dark)}.secondary{color:var(--primary-dark);border-color:#d9c3b8;background:#fff}.secondary:hover{background:var(--primary-soft)}.button:disabled{cursor:wait;opacity:.6}
+.tasks{display:grid;gap:8px;margin:0;padding:0;list-style:none}.task{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);font-size:13px;line-height:1.5;cursor:pointer}.task input{margin-top:3px;accent-color:var(--success);width:16px;height:16px;flex:none}.task.done{color:var(--muted);background:var(--success-soft);border-color:#d3e6d0;text-decoration:line-through;cursor:pointer}
+.update{border-left:4px solid var(--warning)}.update p{margin:6px 0 0;font-size:13px;color:#59453c;line-height:1.55}.update .note{font-size:11px;color:var(--muted);margin-top:10px}
+.days{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.day-card{padding:16px;border:1px solid var(--line);border-radius:8px;background:#fff}.day-card.is-today{border-color:var(--primary);box-shadow:0 0 0 2px #9b746426}.day-top{display:flex;align-items:center;gap:10px;margin-bottom:9px}.day-number{display:grid;place-items:center;flex:none;width:34px;height:34px;color:#fff;border-radius:8px;background:var(--navy-soft);font-size:12px;font-weight:700}.day-title{flex:1;min-width:0}.day-title small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+.status{padding:3px 8px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap}.status.done{background:var(--success-soft);color:#4f754e}.status.today{background:var(--primary);color:#fff}.status.missed{background:var(--danger-soft);color:var(--danger)}.status.up{background:var(--canvas);color:var(--muted)}
+.day-card .obj{margin:0 0 10px;color:#6f5a50;font-size:12px;line-height:1.5}.meta{display:flex;gap:7px;margin-bottom:10px}.detail{padding:3px 7px;color:var(--muted);border-radius:5px;background:var(--canvas);font-size:10px;font-weight:600}
+.empty{display:grid;place-items:center;padding:28px;text-align:center;border:1px dashed #dac8be;border-radius:8px;background:#f1e6df40}.empty h3{margin-bottom:5px;font-size:15px}.empty p{max-width:430px;margin:0;color:var(--muted);font-size:12px;line-height:1.55}
+details.card>summary{cursor:pointer;font-size:16px;font-weight:700;list-style:none;display:flex;align-items:center;justify-content:space-between}details.card>summary::-webkit-details-marker{display:none}details.card>summary::after{content:"+";font-size:20px;color:var(--primary)}details[open].card>summary::after{content:"\2212"}details.card .body{margin-top:16px}
+.form-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px}label.field{display:grid;gap:7px;color:#59453c;font-size:12px;font-weight:600}.full{grid-column:1/-1}input[type=text],input[type=number],select{width:100%;min-height:42px;padding:9px 11px;color:var(--ink);border:1px solid #ddcec6;border-radius:7px;outline:0;background:#fff}input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px #9b74641f}
+.message{display:none;align-items:center;min-height:36px;padding:8px 11px;margin:14px 0 0;border-radius:7px;font-size:12px}.message.visible{display:flex;color:#4f754e;background:var(--success-soft)}.message.error{display:flex;color:var(--danger);background:var(--danger-soft)}
+@media(max-width:980px){.form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.overview{grid-template-columns:1fr}}@media(max-width:820px){.sidebar{width:76px;padding-inline:10px}.brand{justify-content:center}.brand>span:last-child,.profile p,.profile small,.nav-label,.nav-item span{display:none}.profile{padding:12px 7px}.avatar{margin:0}.nav-item{justify-content:center;padding:0}.main{width:calc(100% - 76px);margin-left:76px;padding:24px}}@media(max-width:620px){.sidebar{position:sticky;top:0;width:100%;height:auto;padding:9px 12px;z-index:5}.brand,.profile,.nav-label{display:none}.nav{display:flex;justify-content:space-around}.nav-item{width:42px;min-height:40px}.main{width:100%;margin:0;padding:20px 15px 32px}.card{padding:17px}.form-grid,.days{grid-template-columns:1fr}.actions{flex-direction:column}.button{width:100%}}
+</style>
+</head>
+<body><div class="app">
+<aside class="sidebar">
+ <a class="brand" href="dashboard.html"><img class="brand-logo" src="./SkillPulse logo.png" alt="SkillPulse logo"><span>SkillPulse</span></a>
+ <div class="profile"><div class="avatar" id="avatar">S</div><p id="profileName">Loading…</p><small id="profileLevel">Learner</small></div>
+ <div class="nav-label">Workspace</div><nav class="nav">
+  <a class="nav-item" href="dashboard.html"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
+  <a class="nav-item" href="dashboard.html#plan"><i data-lucide="target"></i><span>Practice Plan</span></a>
+  <a class="nav-item active" href="personalized-plan.html"><i data-lucide="calendar-check"></i><span>My Plan</span></a>
+  <a class="nav-item" href="timetable.html"><i data-lucide="calendar-days"></i><span>Timetable</span></a>
+  <a class="nav-item" href="ai-coach.html"><i data-lucide="sparkles"></i><span>AI Coach</span></a>
+  <a class="nav-item" href="chat.html"><i data-lucide="message-circle"></i><span>Study Chat</span></a>
+ </nav>
+</aside>
+<main class="main"><div class="inner">
+ <header class="page-header"><div class="eyebrow"><i data-lucide="calendar-check"></i> Personalized plan</div><h1>My 7-day study plan</h1><p class="subtitle">One clear plan built from your goal, your daily time and your practice results. Tick tasks off as you go, or just practise: matching tasks complete automatically.</p></header>
+
+ <div id="planArea"><div class="card"><div class="empty"><h3>Loading your plan…</h3></div></div></div>
+
+ <details class="card" id="prefsCard">
+  <summary>Plan settings</summary>
+  <div class="body">
+   <p class="description" style="margin:0 0 16px">Tell SkillPulse how you learn best, then create a new plan. A new plan replaces your current one.</p>
+   <form id="prefs" class="form-grid">
+    <label class="field">Explanation style<select id="style"><option>EXAMPLE_FIRST</option><option>THEORY_FIRST</option><option>PRACTICE_FIRST</option><option>CONCISE</option></select></label>
+    <label class="field">Daily minutes<input id="minutes" type="number" min="10" max="180" placeholder="30"></label>
+    <label class="field">Difficulty<select id="difficulty"><option>ADAPTIVE</option><option>EASY</option><option>MEDIUM</option><option>HARD</option></select></label>
+    <label class="field">Language<input id="language" type="text" maxlength="40" placeholder="English"></label>
+    <label class="field full">Subject<select id="subject" required><option value="">Loading available subjects…</option></select></label>
+    <label class="field full">Learning goal<input id="goal" type="text" maxlength="300" placeholder="For example: Build strong practical skills"></label>
+    <div class="actions full"><button class="button secondary" type="submit"><i data-lucide="save"></i> Save settings</button><button class="button primary" type="button" id="generate"><i data-lucide="wand-sparkles"></i> Create new 7-day plan</button></div>
+   </form>
+   <p id="message" class="message" role="status"></p>
+  </div>
+ </details>
+</div></main></div>
+<script>
+const $=id=>document.getElementById(id);
+async function api(url,options){const r=await fetch(url,options),d=await r.json().catch(()=>({}));if(r.status===401){location.href='login.html';throw new Error('Please sign in.')}if(!r.ok)throw new Error(d.message||'Request failed');return d}
+function esc(v){const d=document.createElement('div');d.textContent=v==null?'':String(v);return d.innerHTML}
+function icons(){if(window.lucide)window.lucide.createIcons()}
+function value(id){return $(id).value}
+function message(text,error){const m=$('message');m.textContent=text;m.className='message '+(error?'error':'visible')}
+function initials(name){return(name||'User').split(/\s+/).filter(Boolean).slice(0,2).map(p=>p.charAt(0).toUpperCase()).join('')||'U'}
+function level(score){return score>=80?'Skill Rising':score>=60?'Skill Stable':'Needs Focus'}
+function renderUser(user,summary){const name=(summary&&summary.user)||user.name||[user.firstName,user.lastName].filter(Boolean).join(' ')||user.email||'SkillPulse User';$('profileName').textContent=name;$('profileLevel').textContent=summary?level(Number(summary.overallHealth||0)):(user.role==='ADMIN'?'Administrator':'Learner');if(user.profilePhoto){const img=document.createElement('img');img.src=user.profilePhoto;img.alt=name;$('avatar').replaceChildren(img)}else{$('avatar').textContent=initials(name)}}
+async function profile(){let user=null;try{user=JSON.parse(sessionStorage.getItem('sp_current_user')||'null')}catch(_){}if(!user||!user.token){location.href='login.html';return}renderUser(user);try{const [me,sum]=await Promise.all([fetch('/api/auth/me?token='+encodeURIComponent(user.token)),fetch('/api/dashboard/summary?token='+encodeURIComponent(user.token))]);const fresh=me.ok?await me.json():user;const summary=sum.ok?await sum.json():null;const merged={...user,...fresh,token:user.token};sessionStorage.setItem('sp_current_user',JSON.stringify(merged));renderUser(merged,summary)}catch(_){renderUser(user)}}
+
+/* ---------- preferences ---------- */
+async function loadSubjects(){const s=$('subject');try{const subjects=await api('/api/practice/subjects');s.innerHTML='<option value="">Select a subject</option>'+subjects.map(x=>`<option value="${esc(x.name)}">${esc(x.name)}</option>`).join('')}catch(e){s.innerHTML='<option value="">Subjects unavailable</option>';throw e}}
+async function loadPrefs(){try{await loadSubjects();const p=await api('/api/personalization/preferences');$('style').value=p.explanationStyle;$('minutes').value=p.dailyMinutes;$('difficulty').value=p.preferredDifficulty;$('language').value=p.language;$('subject').value=p.selectedSubject||'';$('goal').value=p.learningGoal}catch(e){message(e.message,true)}}
+function payload(){return{explanationStyle:value('style'),dailyMinutes:Number(value('minutes')),preferredDifficulty:value('difficulty'),language:value('language'),selectedSubject:value('subject'),learningGoal:value('goal')}}
+function savePrefs(){return api('/api/personalization/preferences',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload())})}
+$('prefs').addEventListener('submit',async e=>{e.preventDefault();try{await savePrefs();message('Settings saved.')}catch(x){message(x.message,true)}});
+$('generate').addEventListener('click',async()=>{
+  if(!value('subject')){message('Choose a subject first.',true);return}
+  if(currentPlan&&currentPlan.planId&&!confirm('Create a new plan? It will replace your current plan and its progress.'))return;
+  const btn=$('generate');btn.disabled=true;message('Creating your plan… this can take up to a minute.');
+  try{await savePrefs();await api('/api/personalization/plans/generate?subject='+encodeURIComponent(value('subject')),{method:'POST'});message('Your new plan is ready.');await loadPlan();window.scrollTo({top:0,behavior:'smooth'})}
+  catch(x){message(x.message,true)}finally{btn.disabled=false}
+});
+
+/* ---------- plan ---------- */
+let currentPlan=null;
+function fmtDate(iso){const p=String(iso).split('-').map(Number);return new Date(p[0],p[1]-1,p[2]).toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'})}
+function statusOf(day,today){if(day.completed)return{cls:'done',text:'Done'};if(day.targetDate===today)return{cls:'today',text:'Today'};if(day.targetDate<today)return{cls:'missed',text:'Missed'};return{cls:'up',text:'Upcoming'}}
+function taskHtml(t){return`<li><label class="task${t.completed?' done':''}"><input type="checkbox" data-task="${t.taskId}"${t.completed?' checked':''} title="${t.completed?'Click to undo':'Mark as done'}"><span>${esc(t.description)}</span></label></li>`}
+function engineNote(engine){const e=String(engine||'');if(!e)return'';return/rule/i.test(e)?'Built from your practice data (the AI writer was unavailable)':'Written by AI · '+e}
+
+function renderPlan(p){
+  currentPlan=p;
+  const area=$('planArea');
+  if(!p||!p.planId){
+    area.innerHTML=`<div class="card"><div class="empty"><h3>You don't have a plan yet</h3><p>Open “Plan settings” below, choose your subject and daily minutes, then press “Create new 7-day plan”.</p></div></div>`;
+    $('prefsCard').open=true;return;
+  }
+  const today=p.today;
+  const all=p.days.reduce((n,d)=>n+d.tasks.length,0);
+  const done=p.days.reduce((n,d)=>n+d.tasks.filter(t=>t.completed).length,0);
+  const pct=all?Math.round(done*100/all):0;
+  const daysDone=p.days.filter(d=>d.completed).length;
+  const todayDay=p.days.find(d=>d.targetDate===today&&!d.completed)||p.days.find(d=>d.targetDate===today);
+  const first=p.days.map(d=>d.targetDate).sort()[0]||today, last=p.days.map(d=>d.targetDate).sort().slice(-1)[0]||today;
+  const finished=today>last;
+
+  let html=`<section class="card"><div class="overview"><div>
+    <h2>${esc(p.subject)} plan</h2>
+    <p class="sum">${esc(p.summary)}</p>
+    <div class="chips">${p.primaryWeakness?`<span class="chip">Main focus: ${esc(p.primaryWeakness)}</span>`:''}<span class="chip plain">${esc(fmtDate(first))} – ${esc(fmtDate(last))}</span>${engineNote(p.engine)?`<span class="chip plain">${esc(engineNote(p.engine))}</span>`:''}</div>
+  </div><div class="progress-box"><strong>${pct}%</strong><span>${done} of ${all} tasks done · ${daysDone} of ${p.days.length} days complete</span><div class="bar"><i style="width:${pct}%"></i></div></div></div></section>`;
+
+  if(todayDay){
+    const st=todayDay.completed;
+    html+=`<section class="card today"><span class="label">Today · Day ${todayDay.day} of ${p.days.length}</span>
+      <div class="today-top"><div><h2>${esc(todayDay.focus)}</h2></div><span class="chip plain">${todayDay.minutes} min</span></div>
+      <p class="objective">${esc(todayDay.objective)}</p>
+      ${st?`<div class="message visible" style="display:flex;margin:0 0 12px">Today's tasks are all done. Nice work!</div>`:''}
+      <ul class="tasks">${todayDay.tasks.map(taskHtml).join('')}</ul>
+      <div class="actions"><a class="button primary" href="dashboard.html#plan"><i data-lucide="target"></i> Start practising</a><a class="button secondary" href="chat.html?q=${encodeURIComponent('Help me with today\'s study task: '+todayDay.focus)}"><i data-lucide="message-circle"></i> Ask the coach</a></div></section>`;
+  }else if(finished){
+    html+=`<section class="card"><div class="empty"><h3>This plan has finished</h3><p>You completed ${daysDone} of ${p.days.length} days. Create a new plan in “Plan settings” to keep going. The next one adapts to how this week went.</p></div></section>`;
+  }else{
+    html+=`<section class="card"><div class="empty"><h3>Your plan starts on ${esc(fmtDate(first))}</h3><p>Come back then, or keep practising on the dashboard in the meantime.</p></div></section>`;
+  }
+
+  const remaining=p.days.filter(d=>!d.completed).length, missed=p.days.filter(d=>!d.completed&&d.targetDate<today).length;
+  if(remaining>0){
+    html+=`<section class="card update"><h2>Couldn't keep up? Update your plan</h2>
+      <p>${missed>0?`You have <strong>${missed} missed day${missed>1?'s':''}</strong>. `:''}If something got in the way today, move your ${remaining} unfinished day${remaining>1?'s':''} forward. Days you already finished stay as they are, and nothing is lost.</p>
+      <div class="actions"><button class="button primary" type="button" data-resched="today"><i data-lucide="rotate-ccw"></i> Catch up, starting today</button><button class="button secondary" type="button" data-resched="tomorrow"><i data-lucide="moon"></i> Rest today, resume tomorrow</button></div>
+      <div class="note">Tip: you can also untick a task you marked by mistake.</div></section>`;
+  }
+
+  html+=`<section class="card"><div style="margin-bottom:16px"><h2>All 7 days</h2><p class="description">Days you missed stay visible so you can still tick them off.</p></div><div class="days">`+
+    p.days.map(d=>{const s=statusOf(d,today);return`<article class="day-card${d.targetDate===today?' is-today':''}"><div class="day-top"><span class="day-number">${d.day}</span><div class="day-title"><h3>${esc(d.focus)}</h3><small>${esc(fmtDate(d.targetDate))}</small></div><span class="status ${s.cls}">${s.text}</span></div><p class="obj">${esc(d.objective)}</p><div class="meta"><span class="detail">${d.minutes} minutes</span><span class="detail">${d.tasks.filter(t=>t.completed).length}/${d.tasks.length} tasks</span></div><ul class="tasks">${d.tasks.map(taskHtml).join('')}</ul></article>`}).join('')+`</div></section>`;
+
+  area.innerHTML=html;
+  area.querySelectorAll('input[data-task]').forEach(box=>box.addEventListener('change',async()=>{
+    const wantDone=box.checked;
+    box.disabled=true;
+    try{renderPlan(await api('/api/personalization/plans/tasks/'+box.getAttribute('data-task')+(wantDone?'/complete':'/uncomplete'),{method:'POST'}))}
+    catch(x){box.checked=!wantDone;box.disabled=false;message(x.message,true);$('prefsCard').open=true}
+  }));
+  area.querySelectorAll('button[data-resched]').forEach(btn=>btn.addEventListener('click',async()=>{
+    const tomorrow=btn.getAttribute('data-resched')==='tomorrow';
+    if(!confirm(tomorrow?'Rest today and move your unfinished days to start tomorrow?':'Move your unfinished days to start today?'))return;
+    area.querySelectorAll('button[data-resched]').forEach(b=>b.disabled=true);
+    try{renderPlan(await api('/api/personalization/plans/reschedule?startTomorrow='+tomorrow,{method:'POST'}))}
+    catch(x){area.querySelectorAll('button[data-resched]').forEach(b=>b.disabled=false);message(x.message,true);$('prefsCard').open=true}
+  }));
+  icons();
+}
+async function loadPlan(){
+  try{renderPlan(await api('/api/personalization/plans/current'))}
+  catch(e){$('planArea').innerHTML=`<div class="card"><div class="empty"><h3>Could not load your plan</h3><p>${esc(e.message)}</p></div></div>`}
+}
+document.addEventListener('DOMContentLoaded',icons);profile();loadPlan();loadPrefs();
+</script></body></html>
