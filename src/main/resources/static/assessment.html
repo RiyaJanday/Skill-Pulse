@@ -398,6 +398,8 @@
   let answers = {};
   let review = {};
   let submitted = false;
+  let locked = false;      // answers are frozen once Submit has been pressed
+  let submitting = false;  // a send is in progress
   let warnings = 0;
   let lockStarted = false;
   let questionStartedAt = Date.now();
@@ -499,7 +501,7 @@
   }
 
   function registerWarning() {
-    if (!lockStarted || submitted) return;
+    if (!lockStarted || submitted || locked) return;
     warnings++;
     document.getElementById('warning-count').textContent = warnings;
     document.getElementById('lock-warning').classList.add('show');
@@ -534,7 +536,7 @@
   }
 
   function selectOption(questionId, optionId) {
-    if (submitted) return;
+    if (submitted || locked) return;
     answers[questionId] = {
       optionId,
       timeTakenSeconds: Math.max(1, Math.round((Date.now() - questionStartedAt) / 1000))
@@ -544,7 +546,7 @@
   }
 
   function toggleReview() {
-    if (!assessment) return;
+    if (!assessment || locked) return;
     const question = assessment.questions[currentIndex];
     review[question.id] = !review[question.id];
     updateStatus();
@@ -596,7 +598,8 @@
     `;
     document.getElementById('prev-btn').disabled = currentIndex === 0;
     document.getElementById('next-btn').style.display = currentIndex === assessment.questions.length - 1 ? 'none' : 'inline-block';
-    document.getElementById('submit-btn').style.display = currentIndex === assessment.questions.length - 1 ? 'inline-block' : 'none';
+    document.getElementById('submit-btn').style.display =
+      (currentIndex === assessment.questions.length - 1 || (locked && !submitted)) ? 'inline-block' : 'none';
     document.getElementById('review-btn').textContent = review[question.id] ? 'Unmark Review' : 'Mark Review';
     updateStatus();
   }
@@ -654,15 +657,24 @@
   }
 
   async function submitTest(isAutomatic) {
-    if (!assessment || submitted) return;
+    if (!assessment || submitted || submitting) return;
     const total = assessment.questions.length;
     const answered = Object.keys(answers).length;
-    if (!isAutomatic && answered < total && !confirm(`You answered ${answered} of ${total} questions. Submit anyway?`)) return;
+    if (!isAutomatic && !locked && answered < total && !confirm(`You answered ${answered} of ${total} questions. Submit anyway?`)) return;
 
-    submitted = true;
+    // Answers are frozen from here. `submitted` only becomes true once every answer has reached the server, so a
+    // failed send can be retried with the same button instead of leaving the page dead.
+    locked = true;
+    submitting = true;
     if (timerInterval) window.clearInterval(timerInterval);
-    let correct = 0;
     const token = currentToken();
+    const submitBtn = document.getElementById('submit-btn');
+    const sendable = assessment.questions.filter(q => answers[q.id]);
+    let sentCount = sendable.filter(q => results[q.id]).length;
+    let lastError = '';
+    let retryable = false;
+    let sessionProblem = false;
+    submitBtn.disabled = true;
 
     for (const question of assessment.questions) {
       const answer = answers[question.id];
@@ -673,25 +685,69 @@
         };
         continue;
       }
-      const response = await fetch('/api/practice/attempts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          token,
-          questionId: question.id,
-          selectedOptionId: answer.optionId,
-          timeTakenSeconds: answer.timeTakenSeconds || 1
-        })
-      });
-      const data = await response.json().catch(() => ({}));
-      if (response.ok && data.correct) correct++;
-      results[question.id] = {
-        correct: Boolean(data.correct),
-        explanation: response.ok ? data.explanation : (data.message || 'Could not submit this answer.'),
-        correctOptionId: data.correctOptionId,
-        correctOptionText: data.correctOptionText
-      };
+      if (results[question.id]) continue; // already saved by an earlier attempt
+      submitBtn.textContent = `Submitting ${sentCount + 1}/${sendable.length}...`;
+      try {
+        const response = await fetch('/api/practice/attempts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            token,
+            questionId: question.id,
+            selectedOptionId: answer.optionId,
+            timeTakenSeconds: answer.timeTakenSeconds || 1
+          })
+        });
+        const data = await response.json().catch(() => ({}));
+        if (response.ok) {
+          results[question.id] = {
+            correct: Boolean(data.correct),
+            explanation: data.explanation,
+            correctOptionId: data.correctOptionId,
+            correctOptionText: data.correctOptionText
+          };
+          sentCount++;
+        } else if (response.status === 401 || response.status === 403) {
+          sessionProblem = true; retryable = true;
+          lastError = data.message || 'Your session has expired.';
+          break;
+        } else if (response.status >= 500) {
+          retryable = true;
+          lastError = data.message || 'The server had a problem (HTTP ' + response.status + ').';
+          break;
+        } else {
+          // The server refused this one answer (for example a locked module). Retrying cannot help, so record it
+          // as not graded instead of silently counting it as a wrong answer.
+          results[question.id] = {
+            correct: false,
+            rejected: true,
+            explanation: data.message || 'The server rejected this answer.'
+          };
+        }
+      } catch (error) {
+        retryable = true;
+        lastError = 'Could not reach the server.';
+        break; // the network is down; do not wait through every remaining request
+      }
     }
+
+    submitting = false;
+    if (retryable) {
+      const unsent = sendable.filter(q => !results[q.id]).length;
+      submitBtn.disabled = false;
+      submitBtn.textContent = `Retry Submit (${unsent} unsent)`;
+      const box = document.getElementById('summary');
+      box.style.display = 'block';
+      box.innerHTML = '<strong>Not submitted yet.</strong><br>' + aiEscape(lastError) + ' '
+        + (sessionProblem
+          ? 'Sign in again in another tab, then press Retry here. Your answers on this page are kept.'
+          : 'Your answers on this page are kept. Press Retry when the connection is back.');
+      return;
+    }
+
+    submitted = true;
+    const correct = assessment.questions.filter(q => results[q.id] && results[q.id].correct).length;
+    const rejected = assessment.questions.filter(q => results[q.id] && results[q.id].rejected).length;
 
     const percent = Math.round((correct / total) * 100);
     const summary = document.getElementById('summary');
@@ -700,7 +756,7 @@
     const outcome = assessment.reviewMode
       ? `${correct} mistake${correct === 1 ? '' : 's'} corrected. Correct answers are removed from your review queue.`
       : passed ? 'Module passed. The next module is now unlocked.' : 'Score at least 80% to unlock the next module.';
-    summary.innerHTML = `<strong>${isAutomatic ? 'Time expired. Test submitted automatically.' : 'Test submitted.'}</strong><br>${correct}/${total} correct (${percent}%). ${outcome}`;
+    summary.innerHTML = `<strong>${isAutomatic ? 'Time expired. Test submitted automatically.' : 'Test submitted.'}</strong><br>${correct}/${total} correct (${percent}%). ${outcome}${rejected ? ' ' + rejected + (rejected === 1 ? ' answer was' : ' answers were') + ' rejected by the server and not graded (see the explanations below).' : ''}`;
     document.getElementById('submit-btn').disabled = true;
     document.getElementById('next-btn').style.display = 'none';
     document.getElementById('review-btn').disabled = true;
